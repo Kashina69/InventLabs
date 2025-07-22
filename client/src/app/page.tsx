@@ -12,7 +12,7 @@ const useStore = create<Store>((set) => ({
   setBackendResponse: (data: string) => set({ backendResponse: data }),
 }));
 
-const backendPort = process.env.NEXT_PUBLIC_BACKEND_PORT || "3000";
+const backendPort = process.env.NEXT_PUBLIC_BACKEND_PORT || "8080";
 export default function App() {
   const { backendResponse, setBackendResponse } = useStore();
 
