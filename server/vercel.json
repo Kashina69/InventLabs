@@ -1,8 +1,7 @@
 {
     "version": 2,
     "builds": [
-      { "src": "dist/app.js", "use": "vercel/node" },
-      { "src": "npm run build", "use": "@vercel/static-build" }
+      { "src": "dist/app.js", "use": "vercel/node" }
     ],
     "routes": [
       {
