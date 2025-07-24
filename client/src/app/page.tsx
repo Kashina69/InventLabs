@@ -12,14 +12,14 @@ const useStore = create<Store>((set) => ({
   setBackendResponse: (data: string) => set({ backendResponse: data }),
 }));
 
-const backendPort = process.env.NEXT_PUBLIC_BACKEND_PORT || "8080";
+const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/";
 export default function App() {
   const { backendResponse, setBackendResponse } = useStore();
 
   useEffect(() => {
     const fetchBackend = async () => {
       try {
-        const response = await fetch(`http://localhost:${backendPort}`);
+        const response = await fetch(backendURL);
         const data = await response.json();
         console.log(data, "data ersponse ");
         setBackendResponse(data);
