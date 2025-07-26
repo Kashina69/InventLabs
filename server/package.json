@@ -5,27 +5,53 @@
   "scripts": {
     "dev": "concurrently \"tsc --watch\" \"nodemon dist/app.js\"",
     "build": "tsc",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"./**/*.{ts,js}\" --max-warnings=0",
+    "lint:fix": "eslint \"./**/*.{ts,js}\" --fix --max-warnings=0",
+    "format": "prettier --write './**/*.{ts,js,json,md}'",
+    "check": "npm run lint && npm run format && npm run typecheck"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/nodemailer": "^6.4.17",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
-    "eslint": "^9.31.0",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.5",
+    "pdfkit": "^0.17.1",
     "sequelize": "^6.37.7",
-    "typescript": "^5.8.3"
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.8.3",
+    "winston": "^3.17.0"
   },
   "type": "module",
   "devDependencies": {
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/json2csv": "^5.0.7",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.1.0",
+    "@types/pdfkit": "^0.17.2",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "concurrently": "^9.2.0",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-unused-imports": "^4.1.4",
     "prettier": "^3.6.2"
   }
 }

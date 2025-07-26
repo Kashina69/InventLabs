@@ -2,17 +2,25 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import 'dotenv/config';
 import cors from 'cors';
+import routes from './src/routes/router.js';
+import sequelize from './src/config/db.config.js';
+
+import errorHandler from './src/middlewares/errorHandler..middleware.js';
 
 const app = express();
-const port = process.env.BACKEND_PORT || 8080;
+const PORT = process.env.BACKEND_PORT || 8080;
 
 app.use(cors());
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.json('Hello Backend Here!');
-});
+app.use('/api', routes);
+app.get('/', (_, res) => res.send('Hello Backend Here!'));
 
-app.listen(port, () => {
-  console.log(`Server started at http://localhost:${port}`);
-});
+app.use(errorHandler);
+
+(async () => {
+  await sequelize.sync({ alter: true }); // 👈 sync models
+  app.listen(PORT, () => {
+    console.log(`🔥 Server listening at http://localhost:${PORT}`);
+  });
+})();
