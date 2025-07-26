@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import User from '../models/User.model.js';
-import { signToken } from '../utils/jwt.utils.js';
+import User from '../../modules/user/User.model.js';
+import { signToken } from '../../utils/jwt.utils.js';
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, role } = req.body;

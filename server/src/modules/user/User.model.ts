@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db.config.js';
+import sequelize from '../../config/db.config.js';
 
 class User extends Model {
   public id!: number;
@@ -14,6 +14,10 @@ class User extends Model {
 
   public notificationPreferences?: string;
 
+  public phone!: string;
+
+  public businessId!: number;
+
   public readonly createdAt!: Date;
 }
 
@@ -25,6 +29,8 @@ User.init(
     passwordHash: { type: DataTypes.STRING, allowNull: false },
     role: { type: DataTypes.ENUM('ADMIN', 'STAFF'), allowNull: false },
     notificationPreferences: { type: DataTypes.JSON, allowNull: true },
+    phone: { type: DataTypes.STRING, allowNull: false },
+    businessId: { type: DataTypes.INTEGER, allowNull: false },
   },
   { sequelize, modelName: 'user', timestamps: true }
 );
