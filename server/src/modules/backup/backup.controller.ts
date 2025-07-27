@@ -38,7 +38,7 @@ export const listBackups = (req: Request, res: Response) => {
         const stat = fs.statSync(path.join(BACKUP_DIR, filename));
         return {
           filename,
-          size: (stat.size / 1024).toFixed(2) + ' KB',
+          size: `${(stat.size / 1024).toFixed(2)} KB`,
           createdAt: stat.birthtime,
         };
       });
@@ -51,7 +51,7 @@ export const listBackups = (req: Request, res: Response) => {
 
 // Download a backup
 export const downloadBackup = (req: Request, res: Response) => {
-  const filename = req.params.filename;
+  const { filename } = req.params;
   const filePath = path.join(BACKUP_DIR, filename);
 
   if (!fs.existsSync(filePath)) {

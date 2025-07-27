@@ -8,6 +8,7 @@ import backupRoutes from '../modules/backup/backup.route.js';
 // import alertsRoutes from './alerts.route.js';
 
 import { authenticate, authorizeRoles } from '../middlewares/auth.middleware.js';
+
 const router = Router();
 
 router.use('/auth', authRoutes);

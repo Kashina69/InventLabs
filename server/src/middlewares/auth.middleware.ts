@@ -14,7 +14,7 @@ export const authenticate = (req: any, res: Response, next: NextFunction) => {
   if (!token) return res.status(401).json({ message: 'Unauthorized: No token' });
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const payload = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
     req.user = payload;
     next();
   } catch (err) {
@@ -34,7 +34,7 @@ export const authorizeRoles = (...roles: UserRole[]) => {
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
   const { id, businessId } = decodeToken(req.cookies.token);
   const user = await User.findOne({
-    where: { id, businessId, role: 'ADMIN' }
+    where: { id, businessId, role: 'ADMIN' },
   });
   if (user) {
     return next();
@@ -45,7 +45,7 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
 export const isStaff = async (req: Request, res: Response, next: NextFunction) => {
   const { id, businessId } = decodeToken(req.cookies.token);
   const user = await User.findOne({
-    where: { id, businessId, role: 'STAFF' }
+    where: { id, businessId, role: 'STAFF' },
   });
   if (user) {
     return next();

@@ -51,7 +51,7 @@ export const createProduct = async (req: Request, res: Response) => {
     businessId,
     name,
     barcode,
-    ...rest
+    ...rest,
   });
 
   res.status(201).json(product);
@@ -59,7 +59,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   const productId = req.query.id as string;
-  const { sku, name, barcode, categoryId, stock, threshold, expiryDate,  } = req.body;
+  const { sku, name, barcode, categoryId, stock, threshold, expiryDate } = req.body;
 
   const product = await Products.findByPk(productId);
   if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -83,7 +83,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
   const businessId = getBusinessIdFromReq(req);
 
-  await product.update({ sku, name, barcode, categoryId, stock, threshold, expiryDate, });
+  await product.update({ sku, name, barcode, categoryId, stock, threshold, expiryDate });
   res.json(product);
 };
 

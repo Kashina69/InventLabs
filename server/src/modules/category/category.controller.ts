@@ -39,7 +39,7 @@ export const edit = async (req: Request, res: Response) => {
 
     // Check for duplicate category name in the same business, excluding current category
     const duplicate = await Category.findOne({
-      where: { name, businessId, id: { $ne: id } }
+      where: { name, businessId, id: { $ne: id } },
     });
     if (duplicate) {
       return res.status(409).json({ error: 'Category with this name already exists' });
