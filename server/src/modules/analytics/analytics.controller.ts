@@ -61,7 +61,7 @@ export const exportProductsExcel = async (_: Request, res: Response) => {
     { header: 'ExpiryDate', key: 'expiryDate', width: 15 },
   ];
 
-  products.forEach((p:any) => {
+  products.forEach((p: any) => {
     sheet.addRow({
       id: p.id,
       sku: p.sku,

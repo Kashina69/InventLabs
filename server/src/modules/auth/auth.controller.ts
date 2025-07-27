@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import User from '../../modules/user/User.model.js';
+import User from '../user/User.model.js';
 import Business from '../business/Business.model.js';
 import { signToken } from '../../utils/jwt.utils.js';
 
@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const { id: businessId } = await Business.create({ name: business_name });
   const user = await User.create({ name, email, passwordHash, role: 'ADMIN', phone, businessId });
-  const token = signToken({ id: user.id, email: user.email, name: user.name, role: 'ADMIN' });
+  const token = signToken({ id: user.id, email: user.email, name: user.name, role: 'ADMIN', businessId: user.businessId, });
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
   res.status(201).json({ message: 'Registered successfully' });
 };

@@ -1,10 +1,5 @@
 import express from 'express';
-import {
-  triggerBackup,
-  listBackups,
-  downloadBackup,
-  zipAndDownload,
-} from './backup.controller.js';
+import { triggerBackup, listBackups, downloadBackup, zipAndDownload } from './backup.controller.js';
 
 const router = express.Router();
 
