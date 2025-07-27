@@ -7,7 +7,7 @@ interface JwtPayload {
   role: UserRole;
 }
 
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = (req: any, res: Response, next: NextFunction) => {
   const token = req.cookies?.token;
   if (!token) return res.status(401).json({ message: 'Unauthorized: No token' });
 
@@ -21,7 +21,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const authorizeRoles = (...roles: UserRole[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: any, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Forbidden: Insufficient role' });
     }

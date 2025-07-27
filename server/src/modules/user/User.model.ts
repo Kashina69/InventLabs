@@ -12,7 +12,7 @@ class User extends Model {
 
   public role!: 'ADMIN' | 'STAFF';
 
-  public notificationPreferences?: string;
+  public notificationPreferences?: Record<string, any>;
 
   public phone!: string;
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import Products from '../models/product.model.js';
+import Products from './Product.model.js';
 
 export const getAllProducts = async (_: Request, res: Response) => {
   const products = await Products.findAll();

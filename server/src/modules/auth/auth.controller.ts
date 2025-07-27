@@ -32,7 +32,7 @@ export const login = async (req: Request, res: Response) => {
   res.json({ message: 'Login successful' });
 };
 
-export const me = async (req: Request, res: Response) => {
+export const me = async (req: any, res: Response) => {
   res.json({ user: req.user });
 };
 

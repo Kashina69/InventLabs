@@ -31,7 +31,4 @@ router.post(
 // GET /api/inventory/logs
 router.get('/logs', authenticate, getLogs);
 
-router.get('/', authenticate, controller.getInventory);
-router.post('/', authenticate, authorizeRoles('ADMIN'), controller.addInventory);
-
 export default router;
