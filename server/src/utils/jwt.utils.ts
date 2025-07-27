@@ -8,3 +8,7 @@ export const signToken = (payload: UserPayload) => {
 export const verifyToken = (token: string): UserPayload => {
   return jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
 };
+
+export const decodeToken = (token: string): UserPayload => {
+  return jwt.decode(token) as UserPayload;
+};
