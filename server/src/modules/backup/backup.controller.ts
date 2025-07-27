@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Parser } from 'json2csv';
-import Product from '../models/product.model.js';
-import InventoryLog from '../models/InventoryLog.model.js';
+import Product from '../product/Product.model.js';
+import InventoryLog from '../inventoryLogs/InventoryLog.model.js';
 
 export const exportLocalBackup = async (req: Request, res: Response) => {
   const format = (req.query.format as string)?.toLowerCase() || 'json';

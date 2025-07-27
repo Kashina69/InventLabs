@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { Op, fn, col } from 'sequelize';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
-import Product from '../models/product.model.js';
-import InventoryLog from '../models/InventoryLog.model.js';
+import Product from '../product/Product.model.js';
+import InventoryLog from '../inventoryLogs/InventoryLog.model.js';
 // 1. Category‑wise stock summary
 export const getStockSummary = async (_: Request, res: Response) => {
   const rows = await Product.findAll({
@@ -61,7 +61,7 @@ export const exportProductsExcel = async (_: Request, res: Response) => {
     { header: 'ExpiryDate', key: 'expiryDate', width: 15 },
   ];
 
-  products.forEach(p => {
+  products.forEach((p:any) => {
     sheet.addRow({
       id: p.id,
       sku: p.sku,

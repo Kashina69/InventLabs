@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { exportLocalBackup } from '../controllers/backup.controller.js';
-import { manualSync } from '../controllers/search.controller.js';
+import { exportLocalBackup } from '../modules/backup/backup.controller.js';
 import { authenticate, authorizeRoles } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -20,7 +19,5 @@ const validateSync = [
   },
 ];
 
-// POST /api/sync/manual
-router.post('/sync/manual', authenticate, authorizeRoles('ADMIN'), validateSync, manualSync);
 
 export default router;

@@ -5,7 +5,7 @@ import {
   getActivity,
   exportProductsExcel,
   exportLogsPDF,
-} from '../controllers/analytics.controller.js';
+} from '../modules/analytics/analytics.controller.js';
 import { authenticate, authorizeRoles } from '../middlewares/auth.middleware.js';
 
 const router = Router();
