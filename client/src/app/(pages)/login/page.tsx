@@ -1,57 +1,45 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
+
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import Link from "next/link"
 import { Eye, EyeOff, LogIn, Package, AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type LoginForm = z.infer<typeof loginSchema>
+
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const { login, isLoading } = useAuth()
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
+  const onSubmit = async (data: LoginForm) => {
     try {
-      await login(formData.email, formData.password)
+      await login(data.email, data.password)
     } catch (err) {
-      setErrors({ submit: err instanceof Error ? err.message : "Login failed" })
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setError("root", {
+        message: err instanceof Error ? err.message : "Login failed",
+      })
     }
   }
 
@@ -66,43 +54,37 @@ export default function Login() {
           <p className="text-muted text-sm">Sign in to your inventory dashboard</p>
         </div>
 
-        {errors.submit && (
+        {errors.root && (
           <div className="mb-6 p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
-            {errors.submit}
+            {errors.root.message}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-primary mb-2">Email Address</label>
             <input
+              {...register("email")}
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                 errors.email ? "border-danger bg-danger/10" : "border-custom"
               }`}
               placeholder="Enter your email"
-              required
               disabled={isLoading}
             />
-            {errors.email && <p className="mt-1 text-sm text-danger">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-primary mb-2">Password</label>
             <div className="relative">
               <input
+                {...register("password")}
                 type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
                 className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.password ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter your password"
-                required
                 disabled={isLoading}
               />
               <button
@@ -114,7 +96,7 @@ export default function Login() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-sm text-danger">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-danger">{errors.password.message}</p>}
           </div>
 
           <button

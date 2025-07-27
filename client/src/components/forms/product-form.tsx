@@ -1,49 +1,49 @@
 "use client"
-
-import type React from "react"
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { ArrowLeft, Package } from "lucide-react"
 import Link from "next/link"
 
+const categories = ["Electronics", "Clothing", "Home & Garden", "Sports", "Books", "Toys", "Food & Beverage"]
+
+const productSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Product name must be at least 2 characters")
+    .max(100, "Product name must be less than 100 characters"),
+  sku: z.string().min(2, "SKU must be at least 2 characters").max(50, "SKU must be less than 50 characters"),
+  category: z.string().min(1, "Please select a category"),
+  quantity: z.coerce.number().min(0, "Quantity must be 0 or greater"),
+  threshold: z.coerce.number().min(0, "Threshold must be 0 or greater"),
+})
+
+type ProductForm = z.infer<typeof productSchema>
+
 export default function ProductForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    sku: "",
-    category: "",
-    quantity: "",
-    threshold: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      sku: "",
+      category: "",
+      quantity: 0,
+      threshold: 0,
+    },
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const categories = ["Electronics", "Clothing", "Home & Garden", "Sports", "Books", "Toys", "Food & Beverage"]
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.name.trim()) newErrors.name = "Product name is required"
-    if (!formData.sku.trim()) newErrors.sku = "SKU is required"
-    if (!formData.category) newErrors.category = "Category is required"
-    if (!formData.quantity || Number.parseInt(formData.quantity) < 0) newErrors.quantity = "Valid quantity is required"
-    if (!formData.threshold || Number.parseInt(formData.threshold) < 0)
-      newErrors.threshold = "Valid threshold is required"
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validateForm()) {
-      console.log("Form submitted:", formData)
+  const onSubmit = async (data: ProductForm) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log("Form submitted:", data)
       // Handle form submission
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+    } catch (error) {
+      console.error("Error submitting form:", error)
     }
   }
 
@@ -71,48 +71,45 @@ export default function ProductForm() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="block text-sm font-medium text-primary mb-2">Product Name *</label>
               <input
+                {...register("name")}
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.name ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter product name"
+                disabled={isSubmitting}
               />
-              {errors.name && <p className="mt-1 text-sm text-danger">{errors.name}</p>}
+              {errors.name && <p className="mt-1 text-sm text-danger">{errors.name.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-primary mb-2">SKU *</label>
               <input
+                {...register("sku")}
                 type="text"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.sku ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter SKU"
+                disabled={isSubmitting}
               />
-              {errors.sku && <p className="mt-1 text-sm text-danger">{errors.sku}</p>}
+              {errors.sku && <p className="mt-1 text-sm text-danger">{errors.sku.message}</p>}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-primary mb-2">Category *</label>
             <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
+              {...register("category")}
               className={`w-full px-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                 errors.category ? "border-danger bg-danger/10" : "border-custom"
               }`}
+              disabled={isSubmitting}
             >
               <option value="">Select a category</option>
               {categories.map((category) => (
@@ -121,49 +118,55 @@ export default function ProductForm() {
                 </option>
               ))}
             </select>
-            {errors.category && <p className="mt-1 text-sm text-danger">{errors.category}</p>}
+            {errors.category && <p className="mt-1 text-sm text-danger">{errors.category.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="block text-sm font-medium text-primary mb-2">Quantity *</label>
               <input
+                {...register("quantity")}
                 type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
                 min="0"
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.quantity ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter quantity"
+                disabled={isSubmitting}
               />
-              {errors.quantity && <p className="mt-1 text-sm text-danger">{errors.quantity}</p>}
+              {errors.quantity && <p className="mt-1 text-sm text-danger">{errors.quantity.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-primary mb-2">Low Stock Threshold *</label>
               <input
+                {...register("threshold")}
                 type="number"
-                name="threshold"
-                value={formData.threshold}
-                onChange={handleChange}
                 min="0"
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.threshold ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter threshold"
+                disabled={isSubmitting}
               />
-              {errors.threshold && <p className="mt-1 text-sm text-danger">{errors.threshold}</p>}
+              {errors.threshold && <p className="mt-1 text-sm text-danger">{errors.threshold.message}</p>}
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6">
             <button
               type="submit"
-              className="flex-1 bg-accent text-white py-3 px-6 rounded-xl font-medium hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface transition-colors touch-manipulation"
+              disabled={isSubmitting}
+              className="flex-1 bg-accent text-white py-3 px-6 rounded-xl font-medium hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface transition-colors touch-manipulation flex items-center justify-center gap-2"
             >
-              Add Product
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Adding Product...
+                </>
+              ) : (
+                "Add Product"
+              )}
             </button>
             <Link
               href="/inventory"

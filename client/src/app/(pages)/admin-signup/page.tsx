@@ -1,8 +1,10 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import Link from "next/link"
 import { Eye, EyeOff, UserPlus, Package, Building, StarIcon as Industry, User } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -22,82 +24,66 @@ const industryTypes = [
   "Other",
 ]
 
-export default function AdminSignup() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    businessName: "",
-    industryType: "",
+const adminSignupSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Full name must be at least 2 characters")
+      .max(50, "Full name must be less than 50 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(100, "Password must be less than 100 characters"),
+    confirmPassword: z.string(),
+    businessName: z
+      .string()
+      .min(2, "Business name must be at least 2 characters")
+      .max(100, "Business name must be less than 100 characters"),
+    industryType: z.string().min(1, "Please select an industry type"),
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+type AdminSignupForm = z.infer<typeof adminSignupSchema>
+
+export default function AdminSignup() {
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
   const { registerAdmin, isLoading } = useAuth()
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<AdminSignupForm>({
+    resolver: zodResolver(adminSignupSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      businessName: "",
+      industryType: "",
+    },
+  })
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Full name is required"
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-
-    if (!formData.businessName.trim()) {
-      newErrors.businessName = "Business name is required"
-    }
-
-    if (!formData.industryType) {
-      newErrors.industryType = "Industry type is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
+  const onSubmit = async (data: AdminSignupForm) => {
     try {
       await registerAdmin({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        businessName: formData.businessName,
-        industryType: formData.industryType,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        businessName: data.businessName,
+        industryType: data.industryType,
       })
     } catch (err) {
-      setErrors({ submit: err instanceof Error ? err.message : "Registration failed" })
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setError("root", {
+        message: err instanceof Error ? err.message : "Registration failed",
+      })
     }
   }
 
@@ -112,13 +98,13 @@ export default function AdminSignup() {
           <p className="text-muted text-sm">Set up your business inventory management system</p>
         </div>
 
-        {errors.submit && (
+        {errors.root && (
           <div className="mb-6 p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
-            {errors.submit}
+            {errors.root.message}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Personal Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-primary border-b border-custom pb-2">
@@ -130,35 +116,29 @@ export default function AdminSignup() {
               <div>
                 <label className="block text-sm font-medium text-primary mb-2">Full Name *</label>
                 <input
+                  {...register("name")}
                   type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
                   className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                     errors.name ? "border-danger bg-danger/10" : "border-custom"
                   }`}
                   placeholder="Enter your full name"
-                  required
                   disabled={isLoading}
                 />
-                {errors.name && <p className="mt-1 text-sm text-danger">{errors.name}</p>}
+                {errors.name && <p className="mt-1 text-sm text-danger">{errors.name.message}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-primary mb-2">Email Address *</label>
                 <input
+                  {...register("email")}
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
                   className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                     errors.email ? "border-danger bg-danger/10" : "border-custom"
                   }`}
                   placeholder="Enter your email address"
-                  required
                   disabled={isLoading}
                 />
-                {errors.email && <p className="mt-1 text-sm text-danger">{errors.email}</p>}
+                {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
               </div>
             </div>
 
@@ -167,16 +147,12 @@ export default function AdminSignup() {
                 <label className="block text-sm font-medium text-primary mb-2">Password *</label>
                 <div className="relative">
                   <input
+                    {...register("password")}
                     type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
                     className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                       errors.password ? "border-danger bg-danger/10" : "border-custom"
                     }`}
                     placeholder="Create a password"
-                    required
-                    minLength={8}
                     disabled={isLoading}
                   />
                   <button
@@ -188,22 +164,19 @@ export default function AdminSignup() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-danger">{errors.password}</p>}
+                {errors.password && <p className="mt-1 text-sm text-danger">{errors.password.message}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-primary mb-2">Confirm Password *</label>
                 <div className="relative">
                   <input
+                    {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
                     className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                       errors.confirmPassword ? "border-danger bg-danger/10" : "border-custom"
                     }`}
                     placeholder="Confirm your password"
-                    required
                     disabled={isLoading}
                   />
                   <button
@@ -215,7 +188,7 @@ export default function AdminSignup() {
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="mt-1 text-sm text-danger">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="mt-1 text-sm text-danger">{errors.confirmPassword.message}</p>}
               </div>
             </div>
           </div>
@@ -230,18 +203,15 @@ export default function AdminSignup() {
             <div>
               <label className="block text-sm font-medium text-primary mb-2">Business Name *</label>
               <input
+                {...register("businessName")}
                 type="text"
-                name="businessName"
-                value={formData.businessName}
-                onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                   errors.businessName ? "border-danger bg-danger/10" : "border-custom"
                 }`}
                 placeholder="Enter your business name"
-                required
                 disabled={isLoading}
               />
-              {errors.businessName && <p className="mt-1 text-sm text-danger">{errors.businessName}</p>}
+              {errors.businessName && <p className="mt-1 text-sm text-danger">{errors.businessName.message}</p>}
             </div>
 
             <div>
@@ -249,13 +219,10 @@ export default function AdminSignup() {
               <div className="relative">
                 <Industry className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
                 <select
-                  name="industryType"
-                  value={formData.industryType}
-                  onChange={handleChange}
+                  {...register("industryType")}
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
                     errors.industryType ? "border-danger bg-danger/10" : "border-custom"
                   }`}
-                  required
                   disabled={isLoading}
                 >
                   <option value="">Select your industry type</option>
@@ -266,7 +233,7 @@ export default function AdminSignup() {
                   ))}
                 </select>
               </div>
-              {errors.industryType && <p className="mt-1 text-sm text-danger">{errors.industryType}</p>}
+              {errors.industryType && <p className="mt-1 text-sm text-danger">{errors.industryType.message}</p>}
             </div>
           </div>
 
