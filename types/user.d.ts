@@ -5,4 +5,5 @@ export interface UserPayload {
   role: UserRole;
   email: string;
   name: string;
+  businessId:number
 }

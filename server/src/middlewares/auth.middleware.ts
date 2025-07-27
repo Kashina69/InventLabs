@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserRole } from '../../../types/user.js';
+import { decodeToken } from '../utils/jwt.utils.js';
+import User from '../modules/user/User.model.js';
 
 interface JwtPayload {
   id: number;
@@ -27,4 +29,26 @@ export const authorizeRoles = (...roles: UserRole[]) => {
     }
     next();
   };
+};
+
+export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, businessId } = decodeToken(req.cookies.token);
+  const user = await User.findOne({
+    where: { id, businessId, role: 'ADMIN' }
+  });
+  if (user) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Not authorized' });
+};
+
+export const isStaff = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, businessId } = decodeToken(req.cookies.token);
+  const user = await User.findOne({
+    where: { id, businessId, role: 'STAFF' }
+  });
+  if (user) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Not authorized' });
 };

@@ -1,27 +1,23 @@
 import { Router } from 'express';
 import * as controller from './prodcut.controller.js';
-import { productValidationRules, validateId } from '../../middlewares/validateProduct.js';
-import { authenticate, authorizeRoles } from '../../middlewares/auth.middleware.js';
+import { authenticate, authorizeRoles, isAdmin } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
 
 router.get('/list', authenticate, controller.getAllProducts);
-router.get('/:id', authenticate, validateId, controller.getProductById);
+router.get('/get', authenticate, controller.getProductById);
 router.post(
-  '/',
+  '/add',
   authenticate,
-  authorizeRoles('ADMIN'),
-  productValidationRules,
+  isAdmin,
   controller.createProduct
 );
 router.put(
-  '/:id',
+  '/update',
   authenticate,
-  authorizeRoles('ADMIN'),
-  validateId,
-  productValidationRules,
+  isAdmin,
   controller.updateProduct
 );
-router.delete('/:id', authenticate, authorizeRoles('ADMIN'), validateId, controller.deleteProduct);
+router.delete('/delete', authenticate, isAdmin, controller.deleteProduct);
 
 export default router;

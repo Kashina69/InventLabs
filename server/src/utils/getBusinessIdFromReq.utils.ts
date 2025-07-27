@@ -6,6 +6,7 @@ const getBusinessIdFromReq = (req: Request): number | null => {
   if (!token) return null;
   try {
     const decoded: any = decodeToken(token);
+    console.log(decoded,"decoded")
     return decoded.businessId;
   } catch {
     return null;

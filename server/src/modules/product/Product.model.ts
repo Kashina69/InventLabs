@@ -25,7 +25,6 @@ class Product extends Model {
 
   public readonly updatedAt!: Date;
 }
-
 Product.init(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },

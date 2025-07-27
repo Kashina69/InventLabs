@@ -3,8 +3,8 @@ import path from 'path';
 import { Request, Response } from 'express';
 import archiver from 'archiver';
 
-const DB_PATH = path.join(__dirname, '../../../database.sql');
-const BACKUP_DIR = path.join(__dirname, '../../../backups');
+const DB_PATH = path.join(path.resolve(), '../../../database.sql');
+const BACKUP_DIR = path.join(path.resolve(), '../../../backups');
 
 if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR);
