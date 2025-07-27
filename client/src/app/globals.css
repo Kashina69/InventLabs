@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
 }
 
 @theme inline {
@@ -14,7 +15,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #1a1b1f;
     --foreground: #ededed;
   }
 }
@@ -23,4 +24,121 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+
+
+@layer base {
+  :root {
+    --background: #1a1b1f;
+    --surface: #232429;
+    --border: #303136;
+    --text: #e5e5e5;
+    --muted: #a1a1aa;
+    --accent: #7c3aed;
+    --danger: #ef4444;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: "Inter", sans-serif;
+  }
+
+  /* Mobile scroll improvements */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better mobile touch targets */
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+  }
+
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Fix for layout alignment */
+  #__next {
+    min-height: 100vh;
+  }
+}
+
+/* Custom utility classes for responsive design */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  .mobile-table {
+    @apply block sm:table w-full;
+  }
+
+  .mobile-table-row {
+    @apply block sm:table-row border-b  mb-4 sm:mb-0 sm:bg-transparent rounded-lg sm:rounded-none p-4 sm:p-0;
+  }
+
+  .mobile-table-cell {
+    @apply block sm:table-cell px-0 sm:px-6 py-2 sm:py-4;
+  }
+
+  /* Ensure proper layout flow */
+  .layout-container {
+    @apply min-h-screen flex;
+  }
+
+  .main-content {
+    @apply flex-1 flex flex-col;
+  }
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+.bg-surface {
+  background-color: var(--surface);
+}
+.bg-accent {
+  background-color: var(--accent);
+}
+.bg-danger {
+  background-color: var(--danger);
+}
+.text-primary {
+  color: var(--text);
+}
+.text-muted {
+  color: var(--muted);
+}
+.text-accent {
+  color: var(--accent);
+}
+.text-danger {
+  color: var(--danger);
+}
+.border-custom {
+  border-color: var(--border);
 }

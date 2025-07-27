@@ -1,0 +1,51 @@
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import StaffSidebar from "./staff-sidebar"
+import StaffHeader from "./staff-header"
+import { useAuth } from "@/contexts/auth-context"
+
+interface StaffLayoutProps {
+  children: React.ReactNode
+}
+
+export default function StaffLayout({ children }: StaffLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+
+  // Protect staff routes
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== "staff")) {
+      router.push("/login")
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null // Will redirect in useEffect
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      <StaffSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <StaffHeader onMenuClick={() => setSidebarOpen(true)} />
+
+        <main className="flex-1 py-4 sm:py-6 lg:py-8">
+          <div className="max-w-7xl mx-auto mobile-container safe-area-inset">{children}</div>
+        </main>
+      </div>
+    </div>
+  )
+}
