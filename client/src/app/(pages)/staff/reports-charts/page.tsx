@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-
+import StaffLayout from "@/components/layout/staff-layout"
 const inventoryTrends = [
   { month: "Jan", total: 1200, inbound: 150, outbound: 120 },
   { month: "Feb", total: 1180, inbound: 180, outbound: 200 },
@@ -47,6 +47,7 @@ const stockDistribution = [
 
 export default function ReportsCharts() {
   return (
+    <StaffLayout>
     <div className="space-y-8">
       {/* Inventory Trends */}
       <div className="bg-surface rounded-2xl p-6 border border-custom">
@@ -177,5 +178,6 @@ export default function ReportsCharts() {
         </div>
       </div> */}
     </div>
+    </StaffLayout>
   )
 }

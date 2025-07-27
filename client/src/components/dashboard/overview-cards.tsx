@@ -6,7 +6,6 @@ const cards = [
   {
     title: "Total Products",
     value: "1,247",
-    change: "+12%",
     changeType: "positive",
     icon: Package,
     color: "accent",
@@ -14,7 +13,6 @@ const cards = [
   {
     title: "Categories",
     value: "24",
-    change: "+2",
     changeType: "positive",
     icon: Grid3X3,
     color: "green",
@@ -22,7 +20,6 @@ const cards = [
   {
     title: "Low Stock",
     value: "18",
-    change: "-5",
     changeType: "negative",
     icon: AlertTriangle,
     color: "yellow",
@@ -30,7 +27,6 @@ const cards = [
   {
     title: "Out of Stock",
     value: "3",
-    change: "+1",
     changeType: "negative",
     icon: XCircle,
     color: "red",
@@ -46,30 +42,69 @@ const colorClasses = {
 
 export default function OverviewCards() {
   return (
-    <div className="mobile-grid">
-      {cards.map((card, index) => (
+    // <div className="mobile-grid ">
+    //   {cards.map((card, index) => (
+    //     <div
+    //       key={index}
+    //       className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-custom hover:shadow-lg hover:shadow-accent/10 transition-all"
+    //     >
+    //       <div className="flex items-center justify-around mb-3 sm:mb-4">
+    //         <div
+    //           className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${colorClasses[card.color]}`}
+    //         >
+    //           <card.icon className="w-6 h-6 sm:w-6 sm:h-6" />
+    //         </div>
+    //         {/* <span
+    //           className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-full ${
+    //             card.changeType === "positive" ? "text-green-700 bg-green-100" : "text-red-700 bg-red-100"
+    //           }`}
+    //         >
+    //           {card.change}
+    //         </span> */}
+          
+    //       <div>
+    //       <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1">{card.value}</h3>
+    //       <p className="text-muted text-xs sm:text-sm">{card.title}</p>
+    //       </div>
+    //       </div>
+    //     </div>
+    //   ))}
+    // </div>
+
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mobile-grid">
+  {cards.map((card, index) => (
+    <div
+      key={index}
+      className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-custom hover:shadow-lg hover:shadow-accent/10 transition-all"
+    >
+      <div className="flex items-center gap-8 mb-3 sm:mb-4">
+        {/* Icon Container */}
         <div
-          key={index}
-          className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-custom hover:shadow-lg hover:shadow-accent/10 transition-all"
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${colorClasses[card.color]}`}
         >
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <div
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${colorClasses[card.color]}`}
-            >
-              <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <span
-              className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-full ${
-                card.changeType === "positive" ? "text-green-700 bg-green-100" : "text-red-700 bg-red-100"
-              }`}
-            >
-              {card.change}
-            </span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-primary mb-1">{card.value}</h3>
-          <p className="text-muted text-xs sm:text-sm">{card.title}</p>
+          <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
-      ))}
+
+        {/* Text Content */}
+        <div>
+          <h3 className="text-lg sm:text-2xl font-bold text-primary mb-1">{card.value}</h3>
+          <p className="text-muted text-sm">{card.title}</p>
+        </div>
+      </div>
+
+      {/* Optional Change Badge (uncomment if needed) */}
+      {/* <span
+        className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-full ${
+          card.changeType === "positive"
+            ? "text-green-700 bg-green-100"
+            : "text-red-700 bg-red-100"
+        }`}
+      >
+        {card.change}
+      </span> */}
     </div>
+  ))}
+</div>
+
   )
 }

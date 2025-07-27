@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Package, ClipboardList, LogOut, X } from "lucide-react"
+import { Package, ClipboardList, LogOut, X,FileText,BarChart3, } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 
 interface StaffSidebarProps {
@@ -12,6 +12,8 @@ interface StaffSidebarProps {
 const navigation = [
   { name: "Products", href: "/staff/dashboard", icon: Package },
   { name: "Restock Requests", href: "/staff/restock-requests", icon: ClipboardList },
+  { name: "Inventory Logs", href: "/staff/inventory-logs", icon: FileText },
+  { name: "Reports", href: "/staff/reports-charts", icon: BarChart3 },
 ]
 
 export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {

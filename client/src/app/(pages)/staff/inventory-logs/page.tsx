@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Search, Filter, Calendar, ArrowUp, ArrowDown, ArrowRight, Package } from "lucide-react"
-
+import StaffLayout from "@/components/layout/staff-layout"
 const logsData = [
   {
     id: 1,
@@ -111,7 +111,8 @@ export default function InventoryLogsTable() {
   }
 
   return (
-    <div className="bg-surface rounded-2xl border border-custom">
+    <StaffLayout>
+      <div className="bg-surface rounded-2xl border border-custom">
       {/* Header */}
       <div className="p-4 sm:p-6 border-b border-custom">
         <div className="flex flex-col gap-4">
@@ -335,5 +336,6 @@ export default function InventoryLogsTable() {
         </div>
       )}
     </div>
+    </StaffLayout>
   )
 }

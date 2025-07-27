@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Save, User, Bell, Shield, Palette } from "lucide-react"
+import { Save, User, Bell, Shield, Palette, Edit } from "lucide-react"
 
 export default function SettingsPanel() {
   const [settings, setSettings] = useState({
@@ -12,6 +12,7 @@ export default function SettingsPanel() {
       push: true,
       lowStock: true,
       outOfStock: true,
+
     },
     profile: {
       name: "John Doe",
@@ -19,11 +20,38 @@ export default function SettingsPanel() {
       phone: "+1 (555) 123-4567",
       timezone: "UTC-5",
     },
+    password: {
+      current: "",
+      new: "",
+    },
   })
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) return "Password must be at least 8 characters.";
+    if (!/[A-Z]/.test(password)) return "Include at least one uppercase letter.";
+    if (!/[a-z]/.test(password)) return "Include at least one lowercase letter.";
+    if (!/[0-9]/.test(password)) return "Include at least one number.";
+    if (!/[!@#$%^&*]/.test(password)) return "Include at least one special character.";
+    return null;
+  }
+
+
   const handleSave = () => {
+    const passwordError = validatePassword(settings.password.new)
+    if (passwordError) {
+      alert(`Error: ${passwordError}`)
+      return
+    }
+
     console.log("Settings saved:", settings)
-    // Handle save logic
+    // Handle actual save logic (API call etc.)
+  }
+
+  const handlePasswordChange = (field: "current" | "new", value: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      password: { ...prev.password, [field]: value },
+    }))
   }
 
   const handleProfileChange = (field: string, value: string) => {
@@ -126,8 +154,43 @@ export default function SettingsPanel() {
         </div>
       </div>
 
-      {/* Notification Settings */}
+
       <div className="bg-surface rounded-2xl border border-custom">
+        <div className="p-6 border-b border-custom">
+          <div className="flex items-center gap-3">
+            <Edit className="w-6 h-6 text-accent" />
+            <div>
+              <h2 className="text-xl font-semibold text-primary">Update Password</h2>
+
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <label className="block text-sm font-medium text-primary mb-2">Current Password</label>
+            <div><input
+              type="password"
+              value={settings.password.current}
+              onChange={(e) => handlePasswordChange("current", e.target.value)}
+              className="w-full px-4 py-3 border border-custom bg-background text-primary placeholder-muted rounded-xl focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
+              placeholder="Enter current password"
+            /></div>
+            <label className="block text-sm font-medium text-primary mb-2">New Password</label>
+            <div><input
+              type="password"
+              value={settings.password.new}
+              onChange={(e) => handlePasswordChange("new", e.target.value)}
+              className="w-full px-4 py-3 border border-custom bg-background text-primary placeholder-muted rounded-xl focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
+              
+              placeholder="Enter new password"
+            /></div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Notification Settings */}
+      {/* <div className="bg-surface rounded-2xl border border-custom">
         <div className="p-6 border-b border-custom">
           <div className="flex items-center gap-3">
             <Bell className="w-6 h-6 text-accent" />
@@ -207,7 +270,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Appearance Settings */}
-      <div className="bg-surface rounded-2xl border border-custom">
+      {/* <div className="bg-surface rounded-2xl border border-custom">
         <div className="p-6 border-b border-custom">
           <div className="flex items-center gap-3">
             <Palette className="w-6 h-6 text-accent" />
@@ -234,7 +297,7 @@ export default function SettingsPanel() {
             </label>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Save Button */}
       <div className="flex justify-end">

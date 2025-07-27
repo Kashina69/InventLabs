@@ -71,9 +71,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 </button>
                 <button
                   onClick={logout}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted hover:text-danger hover:bg-background transition-colors"
+                  className="w-full   flex items-center gap-3 px-3 py-2 text-sm  text-red-600 hover:text-danger hover:bg-background transition-colors "
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4 text-red-600" />
                   Sign Out
                 </button>
               </div>

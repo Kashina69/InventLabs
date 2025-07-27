@@ -54,7 +54,7 @@ export default function DashboardHeader() {
                     <Settings className="w-4 h-4" />
                     Settings
                   </button>
-                  <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition-colors">
+                  <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-slate-700 transition-colors">
                     <LogOut className="w-4 h-4" />
                     Sign Out
                   </button>

@@ -127,7 +127,7 @@ export default function AlertsList() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        className={`inline-flex py-2 pr-4 pl-4 text-xs font-medium rounded-full ${
                           alert.status === "Out of Stock"
                             ? "bg-red-500/20 text-red-400"
                             : "bg-yellow-500/20 text-yellow-400"
@@ -179,7 +179,7 @@ export default function AlertsList() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-500/20 text-yellow-400">
+                    <span className="inline-flex px-4 py-2 text-xs font-medium rounded-full bg-yellow-500/20 text-yellow-400">
                       {alert.status}
                     </span>
                     <p className="text-xs text-muted mt-1">{alert.lastUpdated}</p>

@@ -260,17 +260,17 @@ export default function CategoriesTable() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => openEditModal(category)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm bg-background border border-custom text-primary rounded-lg hover:bg-surface transition-colors touch-manipulation"
+                      className="flex items-center gap-1 px-3 py-1 text-sm  text-primary rounded-lg hover:bg-surface transition-colors touch-manipulation"
                     >
                       <Edit className="w-4 h-4" />
-                      Edit
+                  
                     </button>
                     <button
                       onClick={() => openDeleteModal(category)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm bg-danger/10 border border-danger/20 text-danger rounded-lg hover:bg-danger/20 transition-colors touch-manipulation"
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-danger/10  text-danger rounded-lg hover:bg-danger/20 transition-colors touch-manipulation"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Delete
+                      
                     </button>
                   </div>
                 </td>

@@ -39,6 +39,8 @@ export default function StaffManagementTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [staff, setStaff] = useState(staffData)
+  const [editingStaff, setEditingStaff] = useState(null);
+
 
   const filteredStaff = staff.filter((member) => {
     const matchesSearch =
@@ -49,15 +51,24 @@ export default function StaffManagementTable() {
   })
 
   const handleCreateStaff = (newStaff) => {
-    const staffMember = {
-      id: staff.length + 10,
-      ...newStaff,
-      createdAt: new Date().toISOString().split("T")[0],
-      status: "Active",
+    if (editingStaff) {
+      const updatedStaff = staff.map((s) =>
+        s.id === editingStaff.id ? { ...s, ...newStaff } : s
+      );
+      setStaff(updatedStaff);
+      setEditingStaff(null);
+    } else {
+      const staffMember = {
+        id: staff.length + 10,
+        ...newStaff,
+        createdAt: new Date().toISOString().split("T")[0],
+        status: "Active",
+      };
+      setStaff([...staff, staffMember]);
     }
-    setStaff([...staff, staffMember])
-    setIsCreateModalOpen(false)
-  }
+    setIsCreateModalOpen(false);
+  };
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -129,9 +140,16 @@ export default function StaffManagementTable() {
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted">Created: {member.createdAt}</p>
               <div className="flex items-center gap-2">
-                <button className="p-2 text-muted hover:text-accent transition-colors touch-manipulation">
+                <button
+                  className="p-1 text-muted hover:text-accent transition-colors touch-manipulation"
+                  onClick={() => {
+                    setEditingStaff(member);
+                    setIsCreateModalOpen(true);
+                  }}
+                >
                   <Edit className="w-4 h-4" />
                 </button>
+
                 <button className="p-2 text-muted hover:text-danger transition-colors touch-manipulation">
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -189,9 +207,16 @@ export default function StaffManagementTable() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center gap-2">
-                    <button className="p-1 text-muted hover:text-accent transition-colors touch-manipulation">
+                    <button
+                      className="p-1 text-muted hover:text-accent transition-colors touch-manipulation"
+                      onClick={() => {
+                        setEditingStaff(member);
+                        setIsCreateModalOpen(true);
+                      }}
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
+
                     <button className="p-1 text-muted hover:text-danger transition-colors touch-manipulation">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -215,9 +240,14 @@ export default function StaffManagementTable() {
 
       <CreateStaffModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setEditingStaff(null);
+        }}
         onCreate={handleCreateStaff}
+        initialData={editingStaff}
       />
+
     </div>
   )
 }

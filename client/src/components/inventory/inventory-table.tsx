@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, Edit, Trash2, MoreHorizontal, Plus, ChevronDown } from "lucide-react"
+import { Search, Filter,X, Edit, Trash2, Plus, ChevronDown } from "lucide-react"
 import Link from "next/link"
 
-const inventoryData = [
+const initialInventoryData = [
   {
     id: 1,
     name: "iPhone 14 Pro",
@@ -58,8 +58,11 @@ export default function InventoryTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [inventory, setInventory] = useState(initialInventoryData)
+  const [editProduct, setEditProduct] = useState(null)
 
-  const filteredData = inventoryData.filter((item) => {
+
+  const filteredData = inventory.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.sku.toLowerCase().includes(searchTerm.toLowerCase())
@@ -133,9 +136,8 @@ export default function InventoryTable() {
                           setSelectedCategory(category)
                           setIsFilterOpen(false)
                         }}
-                        className={`w-full text-left px-4 py-3 text-sm hover:bg-background transition-colors touch-manipulation ${
-                          selectedCategory === category ? "bg-accent/20 text-accent" : "text-primary"
-                        }`}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-background transition-colors touch-manipulation ${selectedCategory === category ? "bg-accent/20 text-accent" : "text-primary"
+                          }`}
                       >
                         {category}
                       </button>
@@ -172,15 +174,17 @@ export default function InventoryTable() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <button className="p-2 text-muted hover:text-accent transition-colors touch-manipulation">
+                <button
+                  onClick={() => setEditProduct(item)}
+                  className="p-2 text-muted hover:text-accent transition-colors touch-manipulation"
+                >
                   <Edit className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-muted hover:text-danger transition-colors touch-manipulation">
+
+                <button className="p-2 text-red-600 hover:text-danger transition-colors touch-manipulation">
                   <Trash2 className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-muted hover:text-primary transition-colors touch-manipulation">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
+
               </div>
             </div>
           </div>
@@ -224,15 +228,17 @@ export default function InventoryTable() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex items-center gap-2">
-                    <button className="p-1 text-muted hover:text-accent transition-colors touch-manipulation">
+                    <button
+                      onClick={() => setEditProduct(item)}
+                      className="p-2 text-muted hover:text-accent transition-colors touch-manipulation"
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-muted hover:text-danger transition-colors touch-manipulation">
+
+                    <button className="p-1 text-red-600 hover:text-danger transition-colors touch-manipulation">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-muted hover:text-primary transition-colors touch-manipulation">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
+
                   </div>
                 </td>
               </tr>
@@ -246,6 +252,89 @@ export default function InventoryTable() {
           <p className="text-muted">No products found matching your criteria.</p>
         </div>
       )}
+
+
+      {editProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-surface rounded-xl border border-custom w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-custom">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center">
+                  <Edit className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-primary">Edit Inventory</h2>
+                  <p className="text-sm text-muted">Update inventory information</p>
+                </div>
+              </div>
+              {/* <button
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="p-2 text-muted hover:text-primary transition-colors touch-manipulation disabled:opacity-50"
+              >
+                <X className="w-5 h-5" />
+              </button> */}
+            </div>
+
+            <form  className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-primary mb-2">Product Name *</label>
+                <input
+                  type="text"
+                  value={editProduct.name}
+                  onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                  placeholder="Product Name"
+                />
+                <label className="block text-sm font-medium text-primary mb-2 mt-2">Category Name *</label>
+                <input
+                  type="text"
+                  value={editProduct.category}
+                  onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
+                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                  placeholder="Category Name"
+                />
+                 <label className="block text-sm font-medium text-primary mb-2 mt-2">Stock Number*</label>
+                <input
+                  type="number"
+                  value={editProduct.stock}
+                  onChange={(e) => setEditProduct({ ...editProduct, stock: Number(e.target.value) })}
+                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                  placeholder="Stock"
+                />
+                 <label className="block text-sm font-medium text-primary mb-2 mt-2">Threshold Number *</label>
+                <input
+                  type="number"
+                  value={editProduct.threshold}
+                  onChange={(e) => setEditProduct({ ...editProduct, threshold: Number(e.target.value) })}
+                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                  placeholder="Threshold"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => setEditProduct(null)}
+                  className="flex-1 px-4 py-3 border border-custom bg-background text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50"
+            >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setInventory((prev) =>
+                      prev.map((item) => (item.id === editProduct.id ? { ...editProduct } : item))
+                    )
+                    setEditProduct(null)
+                  }}
+                  className="bg-[#7C3AED] text-white hover:bg-[#7C3AED] flex-1 px-4 py-3 border border-custom  text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50">
+                  Update Inventory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
