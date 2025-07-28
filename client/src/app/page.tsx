@@ -28,29 +28,29 @@ export default function App() {
     initializeAuth();
   }, [initializeAuth]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      // Check if user is authenticated via JWT token
-      if (!jwtUtils.isAuthenticated()) {
-        // router.push("/login");
-      } else {
-        // Redirect based on user role
-        if (user?.role === "ADMIN") {
-          router.push("/admin/dashboard");
-        } else if (user?.role === "STAFF") {
-          router.push("/staff/dashboard");
-        } else {
-          router.push("/admin/dashboard"); // Default fallback
-        }
-      }
-    }
-  }, [user, isLoading, isAuthenticated, router]);
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     // Check if user is authenticated via JWT token
+  //     if (!jwtUtils.isAuthenticated()) {
+  //       // router.push("/login");
+  //     } else {
+  //       // Redirect based on user role
+  //       if (user?.role === "ADMIN") {
+  //         router.push("/admin/dashboard");
+  //       } else if (user?.role === "STAFF") {
+  //         router.push("/staff/dashboard");
+  //       } else {
+  //         router.push("/admin/dashboard"); // Default fallback
+  //       }
+  //     }
+  //   }
+  // }, [user, isLoading, isAuthenticated, router]);
 
   useEffect(() => {
     const fetchBackend = async () => {
       try {
         const response = await fetch(backendURL);
-        const data = await response.json();
+        const data = await response.text();
         console.log(data, "data response ");
         setBackendResponse(data);
       } catch (error) {

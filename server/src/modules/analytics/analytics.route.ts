@@ -14,6 +14,6 @@ router.get('/distribution', authenticate, getDistribution);
 // Query parameters:
 // - filter: 'category' | 'product' (default: 'product')
 // - categoryId: number (optional)
-router.get('/threshold-analysis', authenticate, getThresholdAnalysis);
+router.get('/threshold', authenticate, getThresholdAnalysis);
 
 export default router;

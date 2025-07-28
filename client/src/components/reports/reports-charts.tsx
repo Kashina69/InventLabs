@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,169 +12,300 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts"
+} from "recharts";
+import { useReportStore, ReportFilter } from "@/store/report";
+import { useCategoryStore } from "@/store/category";
 
-const inventoryTrends = [
-  { month: "Jan", total: 1200, inbound: 150, outbound: 120 },
-  { month: "Feb", total: 1180, inbound: 180, outbound: 200 },
-  { month: "Mar", total: 1250, inbound: 220, outbound: 150 },
-  { month: "Apr", total: 1300, inbound: 200, outbound: 150 },
-  { month: "May", total: 1280, inbound: 160, outbound: 180 },
-  { month: "Jun", total: 1320, inbound: 240, outbound: 200 },
-]
-
-const lowStockStats = [
-  { category: "Electronics", count: 8 },
-  { category: "Clothing", count: 5 },
-  { category: "Footwear", count: 3 },
-  { category: "Home & Garden", count: 2 },
-]
-
-const topMovingItems = [
-  { name: "iPhone 14 Pro", moved: 145 },
-  { name: "Samsung Galaxy S23", moved: 120 },
-  { name: "MacBook Air M2", moved: 98 },
-  { name: 'iPad Pro 11"', moved: 87 },
-  { name: "AirPods Pro", moved: 76 },
-]
-
-const stockDistribution = [
-  { name: "In Stock", value: 75, color: "#10b981" },
-  { name: "Low Stock", value: 20, color: "#f59e0b" },
-  { name: "Out of Stock", value: 5, color: "#ef4444" },
-]
+const COLORS = [
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#7c3aed",
+  "#6366f1",
+  "#f472b6",
+];
 
 export default function ReportsCharts() {
+  const {
+    filter,
+    summary,
+    distribution,
+    isLoading,
+    error,
+    fetchDistribution,
+    setFilter,
+    // threshold analysis
+    thresholdSummary,
+    thresholdAnalysis,
+    isLoadingThreshold,
+    errorThreshold,
+    fetchThresholdAnalysis,
+  } = useReportStore();
+  const { categories, fetchCategories } = useCategoryStore();
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
+
+  // Fetch categories if filter is category
+  useEffect(() => {
+    if (filter === "category") {
+      fetchCategories();
+    }
+  }, [filter, fetchCategories]);
+
+  // Fetch distribution on filter/category change
+  useEffect(() => {
+    if (filter === "category" && selectedCategoryId) {
+      fetchDistribution("category", selectedCategoryId);
+    } else if (filter === "product") {
+      fetchDistribution("product");
+    }
+  }, [filter, selectedCategoryId, fetchDistribution]);
+
+  // Fetch threshold analysis on filter/category change
+  useEffect(() => {
+    if (filter === "category" && selectedCategoryId) {
+      fetchThresholdAnalysis("category", selectedCategoryId);
+    } else if (filter === "category") {
+      fetchThresholdAnalysis("category");
+    } else if (filter === "product") {
+      fetchThresholdAnalysis("product");
+    }
+  }, [filter, selectedCategoryId, fetchThresholdAnalysis]);
+
+  // Handle filter dropdown change
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilter(e.target.value as ReportFilter);
+    setSelectedCategoryId(null);
+  };
+
+  // Handle category dropdown change
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategoryId(Number(e.target.value));
+  };
+
+  // Sort distribution by stock descending for bar chart
+  const sortedDistribution = [...distribution].sort(
+    (a, b) => b.stock - a.stock
+  );
+
+  // Determine label key for charts
+  const labelKey =
+    filter === "product" || (filter === "category" && selectedCategoryId)
+      ? "productName"
+      : "categoryName";
+
   return (
     <div className="space-y-8">
-      {/* Inventory Trends */}
-      <div className="bg-surface rounded-2xl p-6 border border-custom">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-primary">Inventory Trends</h2>
-          <p className="text-muted text-sm">Monthly inventory movement over time</p>
-        </div>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={inventoryTrends} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="month" stroke="var(--text)" fontSize={12} />
-              <YAxis stroke="var(--text)" fontSize={12} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--text)",
-                }}
-              />
-              <Line type="monotone" dataKey="total" stroke="#7c3aed" strokeWidth={3} name="Total Stock" />
-              <Line type="monotone" dataKey="inbound" stroke="#10b981" strokeWidth={2} name="Inbound" />
-              <Line type="monotone" dataKey="outbound" stroke="#ef4444" strokeWidth={2} name="Outbound" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="flex gap-4 items-center mb-4">
+        <label className="font-medium">Filter by:</label>
+        <select
+          className="border rounded px-2 py-1"
+          value={filter}
+          onChange={handleFilterChange}
+        >
+          <option value="product">Products</option>
+          <option value="category">Category</option>
+        </select>
+        {filter === "category" && (
+          <select
+            className="border rounded px-2 py-1"
+            value={selectedCategoryId ?? ""}
+            onChange={handleCategoryChange}
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Low Stock by Category */}
-        <div className="bg-surface rounded-2xl p-6 border border-custom">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-primary">Low Stock by Category</h2>
-            <p className="text-muted text-sm">Items below threshold by category</p>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={lowStockStats} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="category" stroke="var(--text)" fontSize={12} />
-                <YAxis stroke="var(--text)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "8px",
-                    color: "var(--text)",
-                  }}
-                />
-                <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Stock Distribution */}
-        <div className="bg-surface rounded-2xl p-6 border border-custom">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-primary">Stock Distribution</h2>
-            <p className="text-muted text-sm">Overall stock status breakdown</p>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={stockDistribution}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {stockDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "8px",
-                    color: "var(--text)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex justify-center mt-4">
-            <div className="flex items-center gap-4 text-sm">
-              {stockDistribution.map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                  <span className="text-muted">
-                    {item.name} ({item.value}%)
-                  </span>
+      {isLoading ? (
+        <div className="text-center py-10">Loading...</div>
+      ) : error ? (
+        <div className="text-center text-red-500 py-10">{error}</div>
+      ) : (
+        <>
+          {/* Pie Charts: Distribution and Threshold Deficit (side by side, responsive) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* Distribution Pie Chart */}
+            <div className="bg-surface rounded-2xl p-6 border border-custom flex flex-col items-center">
+              <h2 className="text-xl font-semibold text-primary mb-2">Stock Distribution</h2>
+              <p className="text-muted text-sm mb-4">
+                {filter === "product"
+                  ? "Stock by Product"
+                  : selectedCategoryId
+                  ? `Stock by Product in ${categories.find((c) => c.id === selectedCategoryId)?.name}`
+                  : "Stock by Category"}
+              </p>
+              <div className="h-64 w-full flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={distribution}
+                      dataKey="stock"
+                      nameKey={labelKey}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
+                    >
+                      {distribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        color: "var(--text)",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {summary && (
+                <div className="mt-4 text-sm text-muted">
+                  Total Products: {summary.totalProducts} | Total Stock: {summary.totalStock}
                 </div>
-              ))}
+              )}
+            </div>
+            {/* Threshold Deficit Pie Chart */}
+            <div className="bg-surface rounded-2xl p-6 border border-custom flex flex-col items-center">
+              <h2 className="text-xl font-semibold text-primary mb-2">Deficit Distribution</h2>
+              <p className="text-muted text-sm mb-4">
+                {filter === "product" || (filter === "category" && selectedCategoryId)
+                  ? "Deficit by Product"
+                  : "Deficit by Category"}
+              </p>
+              <div className="h-64 w-full flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={thresholdAnalysis}
+                      dataKey="deficit"
+                      nameKey={labelKey}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
+                    >
+                      {thresholdAnalysis.map((entry, index) => (
+                        <Cell key={`cell-threshold-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        color: "var(--text)",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {thresholdSummary && (
+                <div className="mt-4 text-sm text-muted">
+                  Total Products: {thresholdSummary.totalProducts} | Products Below Threshold: {thresholdSummary.productsBelowThreshold} | Total Deficit: {thresholdSummary.totalDeficit}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Top Moving Items */}
-      {/* <div className="bg-surface rounded-2xl p-6 border border-custom">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-primary">Top Moving Items</h2>
-          <p className="text-muted text-sm">Most frequently moved products this month</p>
-        </div>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={topMovingItems} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis type="number" stroke="var(--text)" fontSize={12} />
-              <YAxis dataKey="name" type="category" stroke="var(--text)" fontSize={12} width={120} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--text)",
-                }}
-              />
-              <Bar dataKey="moved" fill="#7c3aed" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div> */}
+          {/* Bar Chart for Distribution (horizontal, scrollable if long) */}
+          <div className="bg-surface rounded-2xl p-6 border border-custom flex flex-col items-center overflow-x-auto mb-8" style={{ minWidth: 400, maxWidth: "100%" }}>
+            <h2 className="text-xl font-semibold text-primary mb-2">Stock Bar Chart</h2>
+            <p className="text-muted text-sm mb-4">
+              {filter === "product"
+                ? "Stock by Product"
+                : selectedCategoryId
+                ? `Stock by Product in ${categories.find((c) => c.id === selectedCategoryId)?.name}`
+                : "Stock by Category"}
+            </p>
+            <div className="h-64 w-full min-w-[500px]" style={{ minWidth: sortedDistribution.length > 8 ? sortedDistribution.length * 60 : 500 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={sortedDistribution}
+                  layout="horizontal"
+                  margin={{ top: 5, right: 10, left: 40, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <YAxis
+                    type="number"
+                    dataKey="stock"
+                    stroke="var(--text)"
+                    fontSize={12}
+                  />
+                  <XAxis
+                    type="category"
+                    dataKey={labelKey}
+                    stroke="var(--text)"
+                    fontSize={12}
+                    width={120}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "8px",
+                      color: "var(--text)",
+                    }}
+                  />
+                  <Bar dataKey="stock" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Threshold Deficit Table (below distribution bar chart) */}
+          <div className="bg-surface rounded-2xl p-6 border border-custom overflow-x-auto">
+            <h2 className="text-xl font-semibold text-primary mb-2">Threshold Deficit Table</h2>
+            {isLoadingThreshold ? (
+              <div className="text-center py-10">Loading...</div>
+            ) : errorThreshold ? (
+              <div className="text-center text-red-500 py-10">{errorThreshold}</div>
+            ) : thresholdAnalysis.length === 0 ? (
+              <div className="text-center py-10 text-muted">No deficit data available.</div>
+            ) : (
+              <table className="min-w-[600px] w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="px-2 py-2 text-left">Product</th>
+                    <th className="px-2 py-2 text-left">Category</th>
+                    <th className="px-2 py-2 text-right">Current Stock</th>
+                    <th className="px-2 py-2 text-right">Threshold</th>
+                    <th className="px-2 py-2 text-right">Deficit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {thresholdAnalysis
+                    .sort((a, b) => b.deficit - a.deficit)
+                    .map((item) => (
+                      <tr key={item.productId} className="border-b last:border-0">
+                        <td className="px-2 py-2">{item.productName}</td>
+                        <td className="px-2 py-2">{item.categoryName}</td>
+                        <td className="px-2 py-2 text-right">{item.currentStock}</td>
+                        <td className="px-2 py-2 text-right">{item.threshold}</td>
+                        <td className="px-2 py-2 text-right text-red-600 font-semibold">{item.deficit}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+            {thresholdSummary && (
+              <div className="mt-4 text-sm text-muted">
+                Total Products: {thresholdSummary.totalProducts} | Products Below Threshold: {thresholdSummary.productsBelowThreshold} | Total Deficit: {thresholdSummary.totalDeficit}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
-  )
+  );
 }

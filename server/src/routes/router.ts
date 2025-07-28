@@ -9,7 +9,7 @@ import userRoutes from '../modules/user/user.route.js';
 import analyticsRoutes from '../modules/analytics/analytics.route.js';
 import dashboardRoutes from "../modules/dashboard/dashboard.route.js"
 import alertsRoutes from '../modules/alerts/alerts.routes.js';
-import { authenticate, authorizeRoles } from '../middlewares/auth.middleware.js';
+import { authenticate, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
@@ -21,7 +21,7 @@ router.use('/inventory-logs', authenticate, inventoryLogsRoutes);
 router.use('/user', userRoutes);
 router.use('/analytics', authenticate, analyticsRoutes);
 // router.use('/backup', backupRoutes);
-router.use('/backup', authenticate, authorizeRoles('ADMIN'), backupRoutes);
+router.use('/backup', authenticate, isAdmin, backupRoutes);
 router.use('/dashboard', authenticate, dashboardRoutes)
 router.use('/alerts', authenticate, alertsRoutes);
 

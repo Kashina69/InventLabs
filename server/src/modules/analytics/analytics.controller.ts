@@ -14,89 +14,26 @@ export const getDistribution = async (req: Request, res: Response) => {
     const { filter = 'product' } = req.query;
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : null;
 
-    if (filter === 'category') {
-      // Get distribution by category
-      const categories = await Category.findAll({
-        where: { businessId },
-        attributes: ['id', 'name']
-      });
-
-      const categoryDistribution = await Promise.all(
-        categories.map(async (category) => {
-          const whereClause: any = { 
-            businessId, 
-            categoryId: category.id 
-          };
-          
-          if (categoryId) {
-            whereClause.categoryId = categoryId;
-          }
-
-          const products = await Product.findAll({
-            where: whereClause,
-            attributes: ['id', 'name', 'stock']
-          });
-
-          const totalStock = products.reduce((sum, product) => sum + product.stock, 0);
-          
-          return {
-            categoryId: category.id,
-            categoryName: category.name,
-            productCount: products.length,
-            totalStock,
-            products: products.map(product => ({
-              productId: product.id,
-              productName: product.name,
-              stock: product.stock
-            }))
-          };
-        })
-      );
-
-      const totalCategories = categoryDistribution.length;
-      const totalProducts = categoryDistribution.reduce((sum, cat) => sum + cat.productCount, 0);
-      const grandTotalStock = categoryDistribution.reduce((sum, cat) => sum + cat.totalStock, 0);
-
-      return res.json({
-        filter: 'category',
-        summary: {
-          totalCategories,
-          totalProducts,
-          grandTotalStock
-        },
-        distribution: categoryDistribution
-      });
-
-    } else {
-      // Get distribution by product
-      const whereClause: any = { businessId };
-      if (categoryId) {
-        whereClause.categoryId = categoryId;
-      }
-
+    // If filter is 'category' and categoryId is provided, treat as product filter for that category
+    if (filter === 'category' && categoryId) {
+      // Get all products for the given business and categoryId
       const products = await Product.findAll({
-        where: whereClause,
+        where: { businessId, categoryId },
         attributes: ['id', 'name', 'stock', 'categoryId']
       });
 
-      // Get category names for the products
-      const categoryIds = [...new Set(products.map(p => p.categoryId))];
-      const categories = await Category.findAll({
-        where: { 
-          id: { [Op.in]: categoryIds },
-          businessId 
-        },
+      // Get the category name for the given categoryId
+      const category = await Category.findOne({
+        where: { id: categoryId, businessId },
         attributes: ['id', 'name']
       });
-
-      const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
 
       const productDistribution = products.map(product => ({
         productId: product.id,
         productName: product.name,
         stock: product.stock,
         categoryId: product.categoryId,
-        categoryName: categoryMap.get(product.categoryId) || 'Unknown'
+        categoryName: category ? category.name : 'Unknown'
       }));
 
       const totalProducts = productDistribution.length;
@@ -111,6 +48,49 @@ export const getDistribution = async (req: Request, res: Response) => {
         distribution: productDistribution
       });
     }
+
+    // If filter is 'product' (or 'category' without categoryId), return all products (optionally filtered by categoryId)
+    const whereClause: any = { businessId };
+    if (categoryId) {
+      whereClause.categoryId = categoryId;
+    }
+
+    const products = await Product.findAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'stock', 'categoryId']
+    });
+
+    // Get category names for the products
+    const categoryIds = [...new Set(products.map(p => p.categoryId))];
+    const categories = await Category.findAll({
+      where: { 
+        id: { [Op.in]: categoryIds },
+        businessId 
+      },
+      attributes: ['id', 'name']
+    });
+
+    const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
+
+    const productDistribution = products.map(product => ({
+      productId: product.id,
+      productName: product.name,
+      stock: product.stock,
+      categoryId: product.categoryId,
+      categoryName: categoryMap.get(product.categoryId) || 'Unknown'
+    }));
+
+    const totalProducts = productDistribution.length;
+    const totalStock = productDistribution.reduce((sum, product) => sum + product.stock, 0);
+
+    return res.json({
+      filter: 'product',
+      summary: {
+        totalProducts,
+        totalStock
+      },
+      distribution: productDistribution
+    });
 
   } catch (error) {
     console.error('Error getting distribution:', error);
@@ -128,8 +108,47 @@ export const getThresholdAnalysis = async (req: Request, res: Response) => {
     const { filter = 'product' } = req.query;
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : null;
 
+    // If filter is 'category' and a specific categoryId is provided, treat like 'product' but scoped to that category
+    if (filter === 'category' && categoryId) {
+      // Get all products in the specific category
+      const whereClause: any = { businessId, categoryId };
+      const products = await Product.findAll({
+        where: whereClause,
+        attributes: ['id', 'name', 'stock', 'threshold', 'categoryId']
+      });
+
+      // Get the category name
+      const category = await Category.findOne({
+        where: { id: categoryId, businessId },
+        attributes: ['id', 'name']
+      });
+
+      const productsBelowThreshold = products.filter(product => product.stock < product.threshold);
+      const totalDeficit = productsBelowThreshold.reduce((sum, product) => sum + (product.threshold - product.stock), 0);
+
+      const productThresholdAnalysis = productsBelowThreshold.map(product => ({
+        productId: product.id,
+        productName: product.name,
+        currentStock: product.stock,
+        threshold: product.threshold,
+        deficit: product.threshold - product.stock,
+        categoryId: product.categoryId,
+        categoryName: category ? category.name : 'Unknown'
+      }));
+
+      return res.json({
+        filter: 'product',
+        summary: {
+          totalProducts: products.length,
+          productsBelowThreshold: productsBelowThreshold.length,
+          totalDeficit
+        },
+        thresholdAnalysis: productThresholdAnalysis
+      });
+    }
+
     if (filter === 'category') {
-      // Get threshold analysis by category
+      // Get threshold analysis by category (all categories)
       const categories = await Category.findAll({
         where: { businessId },
         attributes: ['id', 'name']
@@ -137,25 +156,15 @@ export const getThresholdAnalysis = async (req: Request, res: Response) => {
 
       const categoryThresholdAnalysis = await Promise.all(
         categories.map(async (category) => {
-          const whereClause: any = { 
-            businessId, 
-            categoryId: category.id 
-          };
-          
-          if (categoryId) {
-            whereClause.categoryId = categoryId;
-          }
-
+          const whereClause: any = { businessId, categoryId: category.id };
           const products = await Product.findAll({
             where: whereClause,
             attributes: ['id', 'name', 'stock', 'threshold']
           });
 
           const productsBelowThreshold = products.filter(product => product.stock < product.threshold);
-          const totalDeficit = productsBelowThreshold.reduce((sum, product) => {
-            return sum + (product.threshold - product.stock);
-          }, 0);
-          
+          const totalDeficit = productsBelowThreshold.reduce((sum, product) => sum + (product.threshold - product.stock), 0);
+
           return {
             categoryId: category.id,
             categoryName: category.name,
@@ -188,9 +197,8 @@ export const getThresholdAnalysis = async (req: Request, res: Response) => {
         },
         thresholdAnalysis: categoryThresholdAnalysis
       });
-
     } else {
-      // Get threshold analysis by product
+      // Get threshold analysis by product (optionally filtered by categoryId)
       const whereClause: any = { businessId };
       if (categoryId) {
         whereClause.categoryId = categoryId;
@@ -214,9 +222,7 @@ export const getThresholdAnalysis = async (req: Request, res: Response) => {
       const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
 
       const productsBelowThreshold = products.filter(product => product.stock < product.threshold);
-      const totalDeficit = productsBelowThreshold.reduce((sum, product) => {
-        return sum + (product.threshold - product.stock);
-      }, 0);
+      const totalDeficit = productsBelowThreshold.reduce((sum, product) => sum + (product.threshold - product.stock), 0);
 
       const productThresholdAnalysis = productsBelowThreshold.map(product => ({
         productId: product.id,

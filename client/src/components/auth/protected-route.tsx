@@ -30,13 +30,13 @@ export default function ProtectedRoute({
       const isAuthenticated = jwtUtils.isAuthenticated()
       
       if (!isAuthenticated) {
-        router.push('/login')
+        // router.push('/login')
         return
       }
 
       // If role is required, check user role
       if (requiredRole && user?.role !== requiredRole) {
-        router.push('/login')
+        // router.push('/login')
         return
       }
 
