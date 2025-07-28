@@ -4,30 +4,16 @@ import React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { X, UserPlus, Building, StarIcon as Industry, Eye, EyeOff } from "lucide-react"
-import { useAuthStore } from "@/store/auth"
+import { X, UserPlus, Eye, EyeOff } from "lucide-react"
+import { useStaffStore } from "@/store/staff"
 
 interface CreateStaffModalProps {
   isOpen: boolean
   onClose: () => void
-  onCreate: (staffData: any) => void
+  initialData?: any
 }
 
-const industryTypes = [
-  "Technology",
-  "Retail",
-  "Manufacturing",
-  "Healthcare",
-  "Finance",
-  "Education",
-  "Food & Beverage",
-  "Automotive",
-  "Construction",
-  "Real Estate",
-  "Entertainment",
-  "Other",
-]
-
+// Password is required for create, but optional for update
 const staffSchema = z.object({
   name: z
     .string()
@@ -37,19 +23,17 @@ const staffSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be less than 100 characters"),
-  businessName: z
-    .string()
-    .min(2, "Business name must be at least 2 characters")
-    .max(100, "Business name must be less than 100 characters"),
-  industryType: z.string().min(1, "Please select an industry type"),
+    .max(100, "Password must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  phone: z.string().optional(),
 })
 
 type StaffForm = z.infer<typeof staffSchema>
 
-export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateStaffModalProps) {
+export default function CreateStaffModal({ isOpen, onClose, initialData }: CreateStaffModalProps) {
   const [showPassword, setShowPassword] = React.useState(false)
-  const { isLoading } = useAuthStore()
+  const { isLoading, error, createStaff, updateStaff, clearError } = useStaffStore()
 
   const {
     register,
@@ -57,26 +41,73 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
     formState: { errors },
     setError,
     reset,
+    setValue,
+    watch,
   } = useForm<StaffForm>({
     resolver: zodResolver(staffSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
-      businessName: "",
-      industryType: "",
+      phone: "",
     },
   })
 
+  // Set form values when editing
+  React.useEffect(() => {
+    if (initialData) {
+      setValue("name", initialData.name)
+      setValue("email", initialData.email)
+      setValue("phone", initialData.phone || "")
+      setValue("password", "") // Password is blank for editing
+    } else {
+      reset()
+    }
+  }, [initialData, setValue, reset])
+
+  // Custom validation for password: required on create, optional on update
+  const validatePassword = (value: string) => {
+    if (!initialData && (!value || value.length < 8)) {
+      return "Password must be at least 8 characters"
+    }
+    if (value && value.length < 8) {
+      return "Password must be at least 8 characters"
+    }
+    return true
+  }
+
   const onSubmit = async (data: StaffForm) => {
     try {
-      // For now, we'll just call the onCreate callback since the API endpoint might be different
-      onCreate(data)
+      clearError()
+
+      if (initialData) {
+        // Update existing staff
+        // Only send password if provided
+        const updatePayload: any = {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          passwordHash: data.password,
+        }
+        if (data.password && data.password.length >= 8) {
+          updatePayload.passwordHash = data.password
+        }
+        await updateStaff(initialData.id, updatePayload)
+      } else {
+        // Create new staff
+        await createStaff({
+          name: data.name,
+          email: data.email,
+          passwordHash: data.password, // This will be hashed on the server
+          phone: data.phone,
+        })
+      }
+
       reset()
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       setError("root", {
-        message: error instanceof Error ? error.message : "Failed to create staff account",
+        message: error.message || "Failed to save staff account",
       })
     }
   }
@@ -84,6 +115,7 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
   const handleClose = () => {
     if (!isLoading) {
       reset()
+      clearError()
       onClose()
     }
   }
@@ -99,8 +131,12 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
               <UserPlus className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-primary">Add Staff Member</h2>
-              <p className="text-sm text-muted">Create a new staff account with business information</p>
+              <h2 className="text-xl font-semibold text-primary">
+                {initialData ? "Edit Staff Member" : "Add Staff Member"}
+              </h2>
+              <p className="text-sm text-muted">
+                {initialData ? "Update staff account information" : "Create a new staff account"}
+              </p>
             </div>
           </div>
           <button
@@ -116,6 +152,12 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
           {errors.root && (
             <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
               {errors.root.message}
+            </div>
+          )}
+
+          {error && (
+            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+              {error}
             </div>
           )}
 
@@ -157,16 +199,33 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-primary mb-2">Password *</label>
+              <label className="block text-sm font-medium text-primary mb-2">Phone Number</label>
+              <input
+                {...register("phone")}
+                type="tel"
+                className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
+                  errors.phone ? "border-danger bg-danger/10" : "border-custom"
+                }`}
+                placeholder="Enter phone number (optional)"
+                disabled={isLoading}
+              />
+              {errors.phone && <p className="mt-1 text-sm text-danger">{errors.phone.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Password{initialData ? " (leave blank to keep current)" : " *"}
+              </label>
               <div className="relative">
                 <input
-                  {...register("password")}
+                  {...register("password", { validate: validatePassword })}
                   type={showPassword ? "text" : "password"}
                   className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
                     errors.password ? "border-danger bg-danger/10" : "border-custom"
                   }`}
-                  placeholder="Create a password"
+                  placeholder={initialData ? "Enter new password (optional)" : "Create a password"}
                   disabled={isLoading}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -178,51 +237,9 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
                 </button>
               </div>
               {errors.password && <p className="mt-1 text-sm text-danger">{errors.password.message}</p>}
-              <p className="mt-1 text-xs text-muted">Password must be at least 8 characters</p>
-            </div>
-          </div>
-
-          {/* Business Information */}
-          <div className="space-y-4 pt-4 border-t border-custom">
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <Building className="w-4 h-4" />
-              Business Information
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">Business Name *</label>
-              <input
-                {...register("businessName")}
-                type="text"
-                className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
-                  errors.businessName ? "border-danger bg-danger/10" : "border-custom"
-                }`}
-                placeholder="Enter business name"
-                disabled={isLoading}
-              />
-              {errors.businessName && <p className="mt-1 text-sm text-danger">{errors.businessName.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">Industry Type *</label>
-              <div className="relative">
-                <Industry className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
-                <select
-                  {...register("industryType")}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
-                    errors.industryType ? "border-danger bg-danger/10" : "border-custom"
-                  }`}
-                  disabled={isLoading}
-                >
-                  <option value="">Select industry type</option>
-                  {industryTypes.map((industry) => (
-                    <option key={industry} value={industry}>
-                      {industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.industryType && <p className="mt-1 text-sm text-danger">{errors.industryType.message}</p>}
+              <p className="mt-1 text-xs text-muted">
+                Password must be at least 8 characters{initialData ? " (only fill if you want to change password)" : ""}
+              </p>
             </div>
           </div>
 
@@ -238,17 +255,17 @@ export default function CreateStaffModal({ isOpen, onClose, onCreate }: CreateSt
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-accent text-white px-4 py-3 rounded-xl font-medium hover:bg-accent/90 transition-colors touch-manipulation disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 bg-accent text-white px-4 py-3 rounded-xl font-medium hover:bg-accent/90 transition-colors touch-manipulation disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating Account...
+                  {initialData ? "Updating..." : "Creating Account..."}
                 </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  Create Staff Account
+                  {initialData ? "Update Staff Account" : "Create Staff Account"}
                 </>
               )}
             </button>

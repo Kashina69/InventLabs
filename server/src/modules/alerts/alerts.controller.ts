@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import Product from '../product/Product.model.js';
 import Category from '../category/Category.model.js';
 import getBusinessIdFromReq from '../../utils/getBusinessIdFromReq.utils.js';
+import sequelize from '../../config/db.config.js';
 
 export const getStockAlerts = async (req: Request, res: Response) => {
   try {
@@ -33,7 +34,7 @@ export const getStockAlerts = async (req: Request, res: Response) => {
         businessId,
         stock: {
           [Op.gt]: 0,
-          [Op.lt]: require('sequelize').col('threshold')
+          [Op.lt]: sequelize.col('threshold')
         }
       },
       attributes: ['id', 'name', 'sku', 'categoryId', 'stock', 'threshold', 'updatedAt']

@@ -1,76 +1,62 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Plus, Edit, Trash2, User } from "lucide-react"
 import CreateStaffModal from "./create-staff-modal"
-
-// Mock staff data
-const staffData = [
-  {
-    id: 2,
-    name: "Staff User",
-    email: "staff@example.com",
-    businessName: "Tech Solutions Inc",
-    industryType: "Technology",
-    createdAt: "2024-01-10",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "John Smith",
-    email: "john.smith@example.com",
-    businessName: "Retail Store Co",
-    industryType: "Retail",
-    createdAt: "2024-01-08",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    businessName: "Manufacturing Ltd",
-    industryType: "Manufacturing",
-    createdAt: "2024-01-05",
-    status: "Inactive",
-  },
-]
+import { useStaffStore } from "@/store/staff"
 
 export default function StaffManagementTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [staff, setStaff] = useState(staffData)
-  const [editingStaff, setEditingStaff] = useState(null);
+  const [editingStaff, setEditingStaff] = useState<any>(null)
+  const [deleteStaffId, setDeleteStaffId] = useState<number | null>(null)
 
+  const {
+    staff,
+    isLoading,
+    error,
+    fetchStaff,
+    deleteStaff,
+    setSearchTerm: setStoreSearchTerm,
+    clearError
+  } = useStaffStore()
 
-  const filteredStaff = staff.filter((member) => {
-    const matchesSearch =
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.businessName.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
-  })
+  // Fetch staff on component mount
+  useEffect(() => {
+    fetchStaff()
+  }, [fetchStaff])
 
-  const handleCreateStaff = (newStaff) => {
-    if (editingStaff) {
-      const updatedStaff = staff.map((s) =>
-        s.id === editingStaff.id ? { ...s, ...newStaff } : s
-      );
-      setStaff(updatedStaff);
-      setEditingStaff(null);
-    } else {
-      const staffMember = {
-        id: staff.length + 10,
-        ...newStaff,
-        createdAt: new Date().toISOString().split("T")[0],
-        status: "Active",
-      };
-      setStaff([...staff, staffMember]);
+  // Handle search changes
+  useEffect(() => {
+    fetchStaff(searchTerm)
+  }, [searchTerm, fetchStaff])
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    setStoreSearchTerm(value)
+  }
+
+  const handleEditStaff = (staffMember: any) => {
+    setEditingStaff(staffMember)
+    setIsCreateModalOpen(true)
+  }
+
+  const handleDeleteStaff = async (staffId: number) => {
+    try {
+      await deleteStaff(staffId)
+      setDeleteStaffId(null)
+    } catch (error) {
+      console.error("Failed to delete staff:", error)
     }
-    setIsCreateModalOpen(false);
-  };
+  }
 
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false)
+    setEditingStaff(null)
+    clearError()
+  }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
         return "bg-green-500/20 text-green-400"
@@ -88,7 +74,7 @@ export default function StaffManagementTable() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-primary">Staff Accounts</h2>
-              <p className="text-muted text-sm">Manage staff accounts and business information</p>
+              <p className="text-muted text-sm">Manage staff accounts and permissions</p>
             </div>
 
             <button
@@ -107,7 +93,7 @@ export default function StaffManagementTable() {
                 type="text"
                 placeholder="Search staff members..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-custom bg-background text-primary placeholder-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
@@ -115,9 +101,17 @@ export default function StaffManagementTable() {
         </div>
       </div>
 
+      {error && (
+        <div className="p-4 border-b border-custom">
+          <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+            {error}
+          </div>
+        </div>
+      )}
+
       {/* Mobile Card Layout */}
       <div className="block sm:hidden">
-        {filteredStaff.map((member) => (
+        {staff.map((member) => (
           <div key={member.id} className="p-4 border-b border-custom last:border-b-0">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-start gap-3">
@@ -127,30 +121,29 @@ export default function StaffManagementTable() {
                 <div className="flex-1">
                   <h3 className="font-medium text-primary">{member.name}</h3>
                   <p className="text-sm text-muted">{member.email}</p>
-                  <p className="text-sm text-muted">{member.businessName}</p>
-                  <p className="text-xs text-muted mt-1">{member.industryType}</p>
+                  {member.phone && <p className="text-sm text-muted">{member.phone}</p>}
                 </div>
               </div>
               <span
-                className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(member.status)}`}
+                className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor("Active")}`}
               >
-                {member.status}
+                Active
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted">Created: {member.createdAt}</p>
+              <p className="text-xs text-muted">Created: {new Date(member.createdAt).toLocaleDateString()}</p>
               <div className="flex items-center gap-2">
                 <button
                   className="p-1 text-muted hover:text-accent transition-colors touch-manipulation"
-                  onClick={() => {
-                    setEditingStaff(member);
-                    setIsCreateModalOpen(true);
-                  }}
+                  onClick={() => handleEditStaff(member)}
                 >
                   <Edit className="w-4 h-4" />
                 </button>
 
-                <button className="p-2 text-muted hover:text-danger transition-colors touch-manipulation">
+                <button 
+                  className="p-2 text-muted hover:text-danger transition-colors touch-manipulation"
+                  onClick={() => setDeleteStaffId(member.id)}
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -168,7 +161,7 @@ export default function StaffManagementTable() {
                 Staff Member
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">
-                Business Info
+                Contact Info
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Created At
@@ -178,7 +171,7 @@ export default function StaffManagementTable() {
             </tr>
           </thead>
           <tbody className="bg-surface divide-y divide-custom">
-            {filteredStaff.map((member) => (
+            {staff.map((member) => (
               <tr key={member.id} className="hover:bg-background transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
@@ -193,31 +186,33 @@ export default function StaffManagementTable() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div className="text-sm text-primary">{member.businessName}</div>
-                    <div className="text-xs text-muted">{member.industryType}</div>
+                    <div className="text-sm text-primary">{member.email}</div>
+                    {member.phone && <div className="text-xs text-muted">{member.phone}</div>}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{member.createdAt}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+                  {new Date(member.createdAt).toLocaleDateString()}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(member.status)}`}
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor("Active")}`}
                   >
-                    {member.status}
+                    Active
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center gap-2">
                     <button
                       className="p-1 text-muted hover:text-accent transition-colors touch-manipulation"
-                      onClick={() => {
-                        setEditingStaff(member);
-                        setIsCreateModalOpen(true);
-                      }}
+                      onClick={() => handleEditStaff(member)}
                     >
                       <Edit className="w-4 h-4" />
                     </button>
 
-                    <button className="p-1 text-muted hover:text-danger transition-colors touch-manipulation">
+                    <button 
+                      className="p-1 text-muted hover:text-danger transition-colors touch-manipulation"
+                      onClick={() => setDeleteStaffId(member.id)}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -228,7 +223,7 @@ export default function StaffManagementTable() {
         </table>
       </div>
 
-      {filteredStaff.length === 0 && (
+      {staff.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <p className="text-muted">
             {searchTerm
@@ -238,16 +233,47 @@ export default function StaffManagementTable() {
         </div>
       )}
 
+      {isLoading && (
+        <div className="text-center py-12">
+          <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted mt-2">Loading staff members...</p>
+        </div>
+      )}
+
       <CreateStaffModal
         isOpen={isCreateModalOpen}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setEditingStaff(null);
-        }}
-        onCreate={handleCreateStaff}
+        onClose={handleCloseModal}
         initialData={editingStaff}
       />
 
+      {/* Delete Confirmation Modal */}
+      {deleteStaffId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-surface rounded-xl border border-custom w-full max-w-md">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-primary mb-4">Delete Staff Member</h3>
+              <p className="text-muted mb-6">
+                Are you sure you want to delete this staff member? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteStaffId(null)}
+                  className="flex-1 px-4 py-2 border border-custom bg-background text-primary rounded-lg font-medium hover:bg-surface transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteStaff(deleteStaffId)}
+                  disabled={isLoading}
+                  className="flex-1 bg-danger text-white px-4 py-2 rounded-lg font-medium hover:bg-danger/90 transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

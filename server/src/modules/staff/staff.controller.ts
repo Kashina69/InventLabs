@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import User from '../user/User.model.js';
 import getBusinessIdFromReq from '../../utils/getBusinessIdFromReq.utils.js';
 import { decodeToken } from '../../utils/jwt.utils.js';
@@ -21,16 +22,21 @@ export const register = async (req: Request, res: Response) => {
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(409).json({ message: 'Email already exists' });
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(passwordHash, 10);
+
     const staff = await User.create({
       name,
       email,
-      passwordHash,
+      passwordHash: hashedPassword,
       phone,
       role: 'STAFF',
       businessId,
     });
 
-    res.status(201).json(staff);
+    // Return staff without password hash
+    const { passwordHash: _, ...staffWithoutPassword } = staff.toJSON();
+    res.status(201).json(staffWithoutPassword);
   } catch (err) {
     res.status(500).json({ message: 'Failed to register staff', error: err });
   }
@@ -55,7 +61,10 @@ export const update = async (req: Request, res: Response) => {
     if (!staff) return res.status(404).json({ message: 'Staff not found' });
 
     await staff.update({ name, email, phone });
-    res.json(staff);
+    
+    // Return staff without password hash
+    const { passwordHash: _, ...staffWithoutPassword } = staff.toJSON();
+    res.json(staffWithoutPassword);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update staff', error: err });
   }
@@ -88,6 +97,7 @@ export const remove = async (req: Request, res: Response) => {
 
 export const list = async (req: Request, res: Response) => {
   try {
+    console.log("list list list list")
     const businessId = getBusinessIdFromReq(req);
     if (!businessId) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -97,6 +107,7 @@ export const list = async (req: Request, res: Response) => {
     const decoded = decodeToken(token);
     if (decoded.role !== 'ADMIN') return res.status(403).json({ message: 'Admin access required' });
 
+    console.log(req.query)
     const { search } = req.query;
     
     const whereClause: any = { 
@@ -105,12 +116,15 @@ export const list = async (req: Request, res: Response) => {
     };
 
     if (search && typeof search === 'string') {
+      // Use Op.like instead of Op.iLike for SQLite compatibility (no ILIKE in SQLite)
       whereClause[Op.or] = [
-        { name: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } },
-        { phone: { [Op.iLike]: `%${search}%` } }
+        { name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } }
       ];
     }
+console.log("search",search)
+    console.log(whereClause)
 
     const staffList = await User.findAll({
       where: whereClause,

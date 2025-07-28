@@ -7,6 +7,7 @@ export const updateProfile = async (req: Request, res: Response) => {
   try {
     const decoded = decodeToken(req.cookies?.token);
     const userId = decoded?.id;
+    console.log(req.body, "req.body")
 
     const { name, email, phone, password, currentPassword } = req.body;
 

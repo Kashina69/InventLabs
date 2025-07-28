@@ -1,16 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Menu, Bell, User, LogOut, Settings } from "lucide-react"
-import { useAuthStore } from "@/store/auth"
+import { useState } from "react";
+import { Menu, Bell, User, LogOut, Settings } from "lucide-react";
+import { useAuthStore } from "@/store/auth";
+import Link from "next/link";
 
 interface HeaderProps {
-  onMenuClick: () => void
+  onMenuClick: () => void;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const { user, logout } = useAuthStore()
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout } = useAuthStore();
 
   return (
     <header className="h-16 bg-surface border-b border-custom flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
@@ -36,10 +37,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
       {/* Right side */}
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <button className="p-2 text-muted hover:text-primary transition-colors touch-manipulation relative">
+        <Link
+          href="/alerts"
+          className="p-2 text-[#E5E5E5] hover:text-[#7C3AED] transition-colors relative"
+        >
           <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full"></span>
-        </button>
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+        </Link>
 
         {/* User menu */}
         <div className="relative">
@@ -62,13 +66,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <div className="p-3 border-b border-custom">
                 <p className="text-sm font-medium text-primary">{user?.name}</p>
                 <p className="text-xs text-muted">{user?.email}</p>
-                {user?.businessName && <p className="text-xs text-muted mt-1">{user.businessName}</p>}
+                {user?.businessName && (
+                  <p className="text-xs text-muted mt-1">{user.businessName}</p>
+                )}
               </div>
               <div className="py-2">
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted hover:text-primary hover:bg-background transition-colors">
+                <Link
+                  href="/settings"
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-100 hover:bg-slate-700 transition-colors"
+                >
                   <Settings className="w-4 h-4" />
                   Settings
-                </button>
+                </Link>
                 <button
                   onClick={logout}
                   className="w-full   flex items-center gap-3 px-3 py-2 text-sm  text-red-600 hover:text-danger hover:bg-background transition-colors "
@@ -83,7 +92,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       {/* Click outside to close menu */}
-      {showUserMenu && <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />}
+      {showUserMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </header>
-  )
+  );
 }

@@ -1,29 +1,22 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import Link from "next/link"
-import { Eye, EyeOff, UserPlus, Package, Building, StarIcon as Industry, User, Phone } from "lucide-react"
-import { useAuthStore } from "@/store/auth"
-import { useRouter } from "next/navigation"
-
-const industryTypes = [
-  "Technology",
-  "Healthcare",
-  "Finance",
-  "Retail",
-  "Manufacturing",
-  "Education",
-  "Food & Beverage",
-  "Automotive",
-  "Construction",
-  "Real Estate",
-  "Entertainment",
-  "Other",
-]
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Link from "next/link";
+import {
+  Eye,
+  EyeOff,
+  UserPlus,
+  Package,
+  Building,
+  User,
+  Phone,
+} from "lucide-react";
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
 
 const adminSignupSchema = z
   .object({
@@ -46,20 +39,19 @@ const adminSignupSchema = z
       .string()
       .min(2, "Business name must be at least 2 characters")
       .max(100, "Business name must be less than 100 characters"),
-    industryType: z.string().min(1, "Please select an industry type"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  });
 
-type AdminSignupForm = z.infer<typeof adminSignupSchema>
+type AdminSignupForm = z.infer<typeof adminSignupSchema>;
 
 export default function AdminSignup() {
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
-  const { register: registerUser, isLoading } = useAuthStore()
-  const router = useRouter()
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const { register: registerUser, isLoading } = useAuthStore();
+  const router = useRouter();
 
   const {
     register,
@@ -75,9 +67,8 @@ export default function AdminSignup() {
       confirmPassword: "",
       phone: "",
       businessName: "",
-      industryType: "",
     },
-  })
+  });
 
   const onSubmit = async (data: AdminSignupForm) => {
     try {
@@ -87,14 +78,14 @@ export default function AdminSignup() {
         password: data.password,
         phone: data.phone,
         business_name: data.businessName,
-      })
-      router.push("/admin/dashboard")
+      });
+      router.push("/admin/dashboard");
     } catch (err) {
       setError("root", {
         message: err instanceof Error ? err.message : "Registration failed",
-      })
+      });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 safe-area-inset">
@@ -103,8 +94,12 @@ export default function AdminSignup() {
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2">Create Admin Account</h1>
-          <p className="text-muted text-sm">Set up your business inventory management system</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2">
+            Create Admin Account
+          </h1>
+          <p className="text-muted text-sm">
+            Set up your business inventory management system
+          </p>
         </div>
 
         {errors.root && (
@@ -123,7 +118,9 @@ export default function AdminSignup() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-primary mb-2">Full Name *</label>
+                <label className="block text-sm font-medium text-primary mb-2">
+                  Full Name *
+                </label>
                 <input
                   {...register("name")}
                   type="text"
@@ -133,33 +130,49 @@ export default function AdminSignup() {
                   placeholder="Enter your full name"
                   disabled={isLoading}
                 />
-                {errors.name && <p className="mt-1 text-sm text-danger">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-sm text-danger">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-primary mb-2">Email Address *</label>
+                <label className="block text-sm font-medium text-primary mb-2">
+                  Email Address *
+                </label>
                 <input
                   {...register("email")}
                   type="email"
                   className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                    errors.email ? "border-danger bg-danger/10" : "border-custom"
+                    errors.email
+                      ? "border-danger bg-danger/10"
+                      : "border-custom"
                   }`}
                   placeholder="Enter your email address"
                   disabled={isLoading}
                 />
-                {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="mt-1 text-sm text-danger">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-primary mb-2">Password *</label>
+                <label className="block text-sm font-medium text-primary mb-2">
+                  Password *
+                </label>
                 <div className="relative">
                   <input
                     {...register("password")}
                     type={showPassword ? "text" : "password"}
                     className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                      errors.password ? "border-danger bg-danger/10" : "border-custom"
+                      errors.password
+                        ? "border-danger bg-danger/10"
+                        : "border-custom"
                     }`}
                     placeholder="Create a password"
                     disabled={isLoading}
@@ -170,20 +183,32 @@ export default function AdminSignup() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-primary transition-colors touch-manipulation"
                     disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-danger">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="mt-1 text-sm text-danger">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-primary mb-2">Confirm Password *</label>
+                <label className="block text-sm font-medium text-primary mb-2">
+                  Confirm Password *
+                </label>
                 <div className="relative">
                   <input
                     {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
                     className={`w-full px-4 py-3 pr-12 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                      errors.confirmPassword ? "border-danger bg-danger/10" : "border-custom"
+                      errors.confirmPassword
+                        ? "border-danger bg-danger/10"
+                        : "border-custom"
                     }`}
                     placeholder="Confirm your password"
                     disabled={isLoading}
@@ -194,28 +219,44 @@ export default function AdminSignup() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-primary transition-colors touch-manipulation"
                     disabled={isLoading}
                   >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="mt-1 text-sm text-danger">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-danger">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-primary mb-2">Phone Number *</label>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Phone Number *
+              </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
                 <input
                   {...register("phone")}
                   type="tel"
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                    errors.phone ? "border-danger bg-danger/10" : "border-custom"
+                    errors.phone
+                      ? "border-danger bg-danger/10"
+                      : "border-custom"
                   }`}
                   placeholder="Enter your phone number"
                   disabled={isLoading}
                 />
               </div>
-              {errors.phone && <p className="mt-1 text-sm text-danger">{errors.phone.message}</p>}
+              {errors.phone && (
+                <p className="mt-1 text-sm text-danger">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -227,39 +268,25 @@ export default function AdminSignup() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-primary mb-2">Business Name *</label>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Business Name *
+              </label>
               <input
                 {...register("businessName")}
                 type="text"
                 className={`w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                  errors.businessName ? "border-danger bg-danger/10" : "border-custom"
+                  errors.businessName
+                    ? "border-danger bg-danger/10"
+                    : "border-custom"
                 }`}
                 placeholder="Enter your business name"
                 disabled={isLoading}
               />
-              {errors.businessName && <p className="mt-1 text-sm text-danger">{errors.businessName.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">Industry Type *</label>
-              <div className="relative">
-                <Industry className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
-                <select
-                  {...register("industryType")}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
-                    errors.industryType ? "border-danger bg-danger/10" : "border-custom"
-                  }`}
-                  disabled={isLoading}
-                >
-                  <option value="">Select your industry type</option>
-                  {industryTypes.map((industry) => (
-                    <option key={industry} value={industry}>
-                      {industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.industryType && <p className="mt-1 text-sm text-danger">{errors.industryType.message}</p>}
+              {errors.businessName && (
+                <p className="mt-1 text-sm text-danger">
+                  {errors.businessName.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -292,5 +319,5 @@ export default function AdminSignup() {
         </div>
       </div>
     </div>
-  )
+  );
 }
