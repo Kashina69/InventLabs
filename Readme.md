@@ -1,7 +1,3 @@
-Here’s a detailed, professional README for your project, highlighting features, tech stack, setup, and usage. You can copy this into your `Readme.md` file.
-
----
-
 # Invent Labs
 
 **Invent Labs** is a modern, full-stack inventory management dashboard designed for businesses to efficiently track, manage, and analyze their inventory. Built with a robust tech stack and a focus on usability, it provides real-time insights, role-based access, and a seamless user experience.
@@ -173,19 +169,10 @@ npm run dev
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
----
-
-## 📄 License
-
-[MIT](LICENSE)
-
----
 
 ## 🙏 Acknowledgements
 
-- Built during a hackathon by [Prince Rawat](https://github.com/Kashina69) and [Ashish Rispectively](https://github.com/akrathor18/)
+- Built during a hackathon by [Prince Rawat](https://github.com/Kashina69), [Ashish](https://github.com/akrathor18/) and [Nimish] (https://github.com/Nimish9306)
 - Thanks to the open-source community for amazing tools and libraries!
 
 ---
-
-Let me know if you want to add more details, screenshots, or deployment instructions!
