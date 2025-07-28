@@ -10,7 +10,6 @@ import errorHandler from './src/middlewares/errorHandler.middleware.js';
 const app = express();
 const PORT = process.env.BACKEND_PORT || 8080;
 app.use(cors({ origin: true, credentials: true }));
-app.options('*', cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use('/api', routes);
