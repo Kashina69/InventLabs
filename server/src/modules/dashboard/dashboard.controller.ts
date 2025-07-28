@@ -31,7 +31,7 @@ export const counts = async (req: Request, res: Response) => {
 
 export const dashboard = async (req: Request, res: Response) => {
   const countsResponse = counts(req, res);
-  const inventoryLogsResponse = await getInventoryLogs(req, res);
+  const inventoryLogsResponse:any = await getInventoryLogs(req, res);
   res.json({
     counts: countsResponse,
     inventoryLogs: inventoryLogsResponse?.data?.data || null,

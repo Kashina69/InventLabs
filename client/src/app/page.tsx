@@ -32,7 +32,7 @@ export default function App() {
     if (!isLoading) {
       // Check if user is authenticated via JWT token
       if (!jwtUtils.isAuthenticated()) {
-        // router.push("/login");
+        router.push("/login");
       } else {
         // Redirect based on user role
         if (user?.role === "ADMIN") {
