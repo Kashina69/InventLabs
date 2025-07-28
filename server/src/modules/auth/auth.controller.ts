@@ -37,12 +37,6 @@ export const login = async (req: Request, res: Response) => {
   res.json({ message: 'Login successful' });
 };
 
-export const me = async (req: any, res: Response) => {
-  const user = await User.findByPk(req.user.id, { attributes: { exclude: ['passwordHash'] } });
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  res.json({ user });
-};
-
 export const logout = (req: Request, res: Response) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out' });
