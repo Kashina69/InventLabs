@@ -1,130 +1,114 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Plus, Edit, Trash2, Calendar, Filter, X } from "lucide-react"
 import AddCategoryModal from "./add-category-modal"
 import EditCategoryModal from "./edit-category-modal"
 import DeleteCategoryModal from "./delete-category-modal"
+import { useCategoryStore } from "@/store/category"
+import { useAuthStore } from "@/store/auth"
 
-// Placeholder data
-const categoriesData = [
-  {
-    id: 1,
-    name: "Electronics",
-    createdBy: "John Doe (john@example.com)",
-    createdAt: "2024-01-15",
-    businessId: "business-1",
-    businessName: "Tech Store",
-  },
-  {
-    id: 2,
-    name: "Clothing",
-    createdBy: "Jane Smith (jane@example.com)",
-    createdAt: "2024-01-14",
-    businessId: "business-1",
-    businessName: "Tech Store",
-  },
-  {
-    id: 3,
-    name: "Home & Garden",
-    createdBy: "Mike Johnson (mike@example.com)",
-    createdAt: "2024-01-13",
-    businessId: "business-2",
-    businessName: "Home Depot",
-  },
-  {
-    id: 4,
-    name: "Sports & Outdoors",
-    createdBy: "Sarah Wilson (sarah@example.com)",
-    createdAt: "2024-01-12",
-    businessId: "business-1",
-    businessName: "Tech Store",
-  },
-  {
-    id: 5,
-    name: "Books & Media",
-    createdBy: "Tom Brown (tom@example.com)",
-    createdAt: "2024-01-11",
-    businessId: "business-3",
-    businessName: "Media World",
-  },
-  {
-    id: 6,
-    name: "Health & Beauty",
-    createdBy: "Lisa Davis (lisa@example.com)",
-    createdAt: "2024-01-10",
-    businessId: "business-2",
-    businessName: "Home Depot",
-  },
-  {
-    id: 7,
-    name: "Automotive",
-    createdBy: "David Miller (david@example.com)",
-    createdAt: "2024-01-09",
-    businessId: "business-1",
-    businessName: "Tech Store",
-  },
-  {
-    id: 8,
-    name: "Food & Beverage",
-    createdBy: "Emma Wilson (emma@example.com)",
-    createdAt: "2024-01-08",
-    businessId: "business-3",
-    businessName: "Media World",
-  },
-]
+interface Category {
+  id: number;
+  name: string;
+  businessId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
 
 export default function CategoriesTable() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [dateFilter, setDateFilter] = useState("")
+  const { user } = useAuthStore()
+  const {
+    categories,
+    isLoading,
+    error,
+    searchTerm,
+    dateFilter,
+    fetchCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    setSearchTerm,
+    setDateFilter,
+    clearError
+  } = useCategoryStore()
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState(null)
-  const [categories, setCategories] = useState(categoriesData)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
 
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
+
+  // Filter categories based on search and date
   const filteredCategories = categories.filter((category) => {
     const matchesSearch =
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.createdBy.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesDate = !dateFilter || category.createdAt === dateFilter
+      (category.createdBy && category.createdBy.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesDate = !dateFilter || category.createdAt.split('T')[0] === dateFilter
     return matchesSearch && matchesDate
   })
 
-  const handleAddCategory = (newCategory) => {
-    const category = {
-      id: categories.length + 1,
-      ...newCategory,
-      createdAt: new Date().toISOString().split("T")[0],
+  const handleAddCategory = async (newCategory: { name: string }) => {
+    try {
+      await createCategory({
+        name: newCategory.name,
+        createdBy: user?.name || "Unknown User"
+      })
+      setIsAddModalOpen(false)
+    } catch (error) {
+      console.error("Failed to add category:", error)
     }
-    setCategories([...categories, category])
-    setIsAddModalOpen(false)
   }
 
-  const handleEditCategory = (updatedCategory) => {
-    setCategories(categories.map((cat) => (cat.id === selectedCategory.id ? { ...cat, ...updatedCategory } : cat)))
-    setIsEditModalOpen(false)
-    setSelectedCategory(null)
+  const handleEditCategory = async (updatedCategory: { name: string }) => {
+    if (!selectedCategory) return
+    
+    try {
+      await updateCategory(selectedCategory.id, updatedCategory)
+      setIsEditModalOpen(false)
+      setSelectedCategory(null)
+    } catch (error) {
+      console.error("Failed to update category:", error)
+    }
   }
 
-  const handleDeleteCategory = () => {
-    setCategories(categories.filter((cat) => cat.id !== selectedCategory.id))
-    setIsDeleteModalOpen(false)
-    setSelectedCategory(null)
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) return
+    
+    try {
+      await deleteCategory(selectedCategory.id)
+      setIsDeleteModalOpen(false)
+      setSelectedCategory(null)
+    } catch (error) {
+      console.error("Failed to delete category:", error)
+    }
   }
 
-  const openEditModal = (category) => {
+  const openEditModal = (category: Category) => {
     setSelectedCategory(category)
     setIsEditModalOpen(true)
   }
 
-  const openDeleteModal = (category) => {
+  const openDeleteModal = (category: Category) => {
     setSelectedCategory(category)
     setIsDeleteModalOpen(true)
   }
 
   const clearDateFilter = () => {
     setDateFilter("")
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
+
+  const formatCreatedBy = (category: Category) => {
+    return category.createdBy || "Unknown User"
   }
 
   return (
@@ -190,8 +174,22 @@ export default function CategoriesTable() {
               </span>
             </div>
           )}
+
+          {error && (
+            <div className="bg-danger/10 border border-danger/20 text-danger px-4 py-2 rounded-lg">
+              {error}
+              <button onClick={clearError} className="ml-2 underline">Dismiss</button>
+            </div>
+          )}
         </div>
       </div>
+
+      {isLoading && (
+        <div className="p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto"></div>
+          <p className="text-muted mt-2">Loading categories...</p>
+        </div>
+      )}
 
       {/* Mobile Card Layout */}
       <div className="block sm:hidden">
@@ -200,9 +198,8 @@ export default function CategoriesTable() {
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <h3 className="font-medium text-primary text-lg">{category.name}</h3>
-                <p className="text-sm text-muted mt-1">{category.createdBy}</p>
-                <p className="text-sm text-muted">{category.businessName}</p>
-                <p className="text-xs text-muted mt-2">Created: {category.createdAt}</p>
+                <p className="text-sm text-muted mt-1">{formatCreatedBy(category)}</p>
+                <p className="text-xs text-muted mt-2">Created: {formatDate(category.createdAt)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 pt-2">
@@ -236,7 +233,6 @@ export default function CategoriesTable() {
               <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Created By
               </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">Business</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Created At
               </th>
@@ -250,27 +246,22 @@ export default function CategoriesTable() {
                   <div className="font-medium text-primary text-lg">{category.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-primary">{category.createdBy}</div>
+                  <div className="text-sm text-primary">{formatCreatedBy(category)}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-muted">{category.businessName}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{category.createdAt}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(category.createdAt)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => openEditModal(category)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm  text-primary rounded-lg hover:bg-surface transition-colors touch-manipulation"
+                      className="flex items-center gap-1 px-3 py-1 text-sm text-primary rounded-lg hover:bg-surface transition-colors touch-manipulation"
                     >
                       <Edit className="w-4 h-4" />
-                  
                     </button>
                     <button
                       onClick={() => openDeleteModal(category)}
-                      className="flex items-center gap-1 px-3 py-1 text-sm bg-danger/10  text-danger rounded-lg hover:bg-danger/20 transition-colors touch-manipulation"
+                      className="flex items-center gap-1 px-3 py-1 text-sm bg-danger/10 text-danger rounded-lg hover:bg-danger/20 transition-colors touch-manipulation"
                     >
                       <Trash2 className="w-4 h-4" />
-                      
                     </button>
                   </div>
                 </td>
@@ -280,7 +271,7 @@ export default function CategoriesTable() {
         </table>
       </div>
 
-      {filteredCategories.length === 0 && (
+      {!isLoading && filteredCategories.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted">
             {searchTerm || dateFilter

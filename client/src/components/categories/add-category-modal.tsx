@@ -8,21 +8,12 @@ import { X, Plus } from "lucide-react"
 interface AddCategoryModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (category: any) => void
+  onAdd: (category: { name: string }) => void
 }
-
-// Placeholder business data
-const businesses = [
-  { id: "business-1", name: "Tech Store" },
-  { id: "business-2", name: "Home Depot" },
-  { id: "business-3", name: "Media World" },
-  { id: "business-4", name: "Fashion Hub" },
-]
 
 export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategoryModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    businessId: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -34,10 +25,6 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategory
       newErrors.name = "Category name is required"
     } else if (formData.name.trim().length < 2) {
       newErrors.name = "Category name must be at least 2 characters"
-    }
-
-    if (!formData.businessId) {
-      newErrors.businessId = "Business selection is required"
     }
 
     setErrors(newErrors)
@@ -52,20 +39,12 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategory
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const selectedBusiness = businesses.find((b) => b.id === formData.businessId)
-
       onAdd({
         name: formData.name.trim(),
-        businessId: formData.businessId,
-        businessName: selectedBusiness?.name || "",
-        createdBy: "John Doe (john@example.com)", // This would come from auth context
       })
 
       // Reset form
-      setFormData({ name: "", businessId: "" })
+      setFormData({ name: "" })
       setErrors({})
     } catch (error) {
       console.error("Error adding category:", error)
@@ -74,7 +53,7 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategory
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
@@ -86,7 +65,7 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategory
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setFormData({ name: "", businessId: "" })
+      setFormData({ name: "" })
       setErrors({})
       onClose()
     }
@@ -131,38 +110,6 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd }: AddCategory
               placeholder="Enter category name"
             />
             {errors.name && <p className="mt-1 text-sm text-danger">{errors.name}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-primary mb-2">Business *</label>
-            <select
-              name="businessId"
-              value={formData.businessId}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              className={`w-full px-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
-                errors.businessId ? "border-danger bg-danger/10" : "border-custom"
-              }`}
-            >
-              <option value="">Select a business</option>
-              {businesses.map((business) => (
-                <option key={business.id} value={business.id}>
-                  {business.name}
-                </option>
-              ))}
-            </select>
-            {errors.businessId && <p className="mt-1 text-sm text-danger">{errors.businessId}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-primary mb-2">Created By</label>
-            <input
-              type="text"
-              value="John Doe (john@example.com)"
-              disabled
-              className="w-full px-4 py-3 border border-custom bg-background/50 text-muted rounded-xl"
-            />
-            <p className="mt-1 text-xs text-muted">Auto-filled from your account</p>
           </div>
 
           <div className="flex gap-3 pt-4">

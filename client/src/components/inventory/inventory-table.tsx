@@ -1,87 +1,107 @@
 "use client"
 
-import { useState } from "react"
-import { Search, Filter,X, Edit, Trash2, Plus, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, Filter, X, Edit, Trash2, Plus, ChevronDown } from "lucide-react"
 import Link from "next/link"
+import { useProductStore } from "@/store/product"
 
-const initialInventoryData = [
-  {
-    id: 1,
-    name: "iPhone 14 Pro",
-    sku: "IPH14P-128-BLK",
-    category: "Electronics",
-    stock: 45,
-    threshold: 10,
-    status: "In Stock",
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S23",
-    sku: "SGS23-256-WHT",
-    category: "Electronics",
-    stock: 3,
-    threshold: 15,
-    status: "Low Stock",
-  },
-  {
-    id: 3,
-    name: "MacBook Air M2",
-    sku: "MBA-M2-512-SLV",
-    category: "Electronics",
-    stock: 0,
-    threshold: 8,
-    status: "Out of Stock",
-  },
-  {
-    id: 4,
-    name: "Nike Air Max 270",
-    sku: "NAM270-10-BLK",
-    category: "Footwear",
-    stock: 28,
-    threshold: 20,
-    status: "In Stock",
-  },
-  {
-    id: 5,
-    name: "Levi's 501 Jeans",
-    sku: "LV501-32-BLU",
-    category: "Clothing",
-    stock: 15,
-    threshold: 25,
-    status: "Low Stock",
-  },
-]
-
-const categories = ["All Categories", "Electronics", "Clothing", "Footwear", "Home & Garden"]
+interface InventoryItem {
+  id: number
+  sku: string
+  name: string
+  barcode: string
+  categoryId: number
+  stock: number
+  threshold: number
+  expiryDate: string | null
+  businessId: number
+  createdAt: string
+  updatedAt: string
+  status: 'in stock' | 'low stock' | 'out of stock'
+}
 
 export default function InventoryTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [inventory, setInventory] = useState(initialInventoryData)
-  const [editProduct, setEditProduct] = useState(null)
+  const [editProduct, setEditProduct] = useState<InventoryItem | null>(null)
 
+  const {
+    products,
+    categories,
+    isLoading,
+    error,
+    fetchProducts,
+    fetchCategories,
+    updateProduct,
+    setSelectedCategoryId,
+    setSearchTerm: setStoreSearchTerm,
+    clearError
+  } = useProductStore()
 
-  const filteredData = inventory.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All Categories" || item.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchProducts()
+    fetchCategories()
+  }, [fetchProducts, fetchCategories])
+
+  // Handle search and filter changes
+  useEffect(() => {
+    const categoryId = selectedCategory === "All Categories" ? null : 
+      categories.find(cat => cat.name === selectedCategory)?.id || null
+    
+    fetchProducts(categoryId || undefined, searchTerm || undefined)
+  }, [selectedCategory, searchTerm, fetchProducts])
+
+  const filteredData = products
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "In Stock":
+      case "in stock":
         return "bg-green-500/20 text-green-400"
-      case "Low Stock":
+      case "low stock":
         return "bg-yellow-500/20 text-yellow-400"
-      case "Out of Stock":
+      case "out of stock":
         return "bg-red-500/20 text-red-400"
       default:
         return "bg-gray-500/20 text-gray-400"
     }
   }
+
+  const getCategoryName = (categoryId: number) => {
+    const category = categories.find(cat => cat.id === categoryId)
+    return category?.name || "Unknown Category"
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    setStoreSearchTerm(value)
+  }
+
+  const handleCategoryChange = (categoryName: string) => {
+    setSelectedCategory(categoryName)
+    const categoryId = categories.find(cat => cat.name === categoryName)?.id || null
+    setSelectedCategoryId(categoryId)
+  }
+
+  const handleUpdateProduct = async () => {
+    if (!editProduct) return;
+    
+    try {
+      await updateProduct(editProduct.id, {
+        sku: editProduct.sku,
+        name: editProduct.name,
+        barcode: editProduct.barcode,
+        categoryId: editProduct.categoryId,
+        stock: editProduct.stock,
+        threshold: editProduct.threshold,
+        expiryDate: editProduct.expiryDate
+      });
+      setEditProduct(null);
+    } catch (error) {
+      // Error is handled by the store
+    }
+  };
 
   return (
     <div className="bg-surface rounded-xl sm:rounded-2xl border border-custom">
@@ -102,6 +122,18 @@ export default function InventoryTable() {
             </Link>
           </div>
 
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-600 px-4 py-3 rounded-lg">
+              {error}
+              <button 
+                onClick={clearError}
+                className="ml-2 text-red-400 hover:text-red-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
@@ -109,7 +141,7 @@ export default function InventoryTable() {
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-custom bg-background text-primary placeholder-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
@@ -129,17 +161,25 @@ export default function InventoryTable() {
                 <>
                   <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setIsFilterOpen(false)} />
                   <div className="absolute right-0 mt-2 w-full sm:w-48 bg-surface rounded-lg shadow-lg border border-custom py-2 z-50">
+                    <button
+                      onClick={() => {
+                        handleCategoryChange("All Categories")
+                        setIsFilterOpen(false)
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-background transition-colors touch-manipulation ${selectedCategory === "All Categories" ? "bg-accent/20 text-accent" : "text-primary"}`}
+                    >
+                      All Categories
+                    </button>
                     {categories.map((category) => (
                       <button
-                        key={category}
+                        key={category.id}
                         onClick={() => {
-                          setSelectedCategory(category)
+                          handleCategoryChange(category.name)
                           setIsFilterOpen(false)
                         }}
-                        className={`w-full text-left px-4 py-3 text-sm hover:bg-background transition-colors touch-manipulation ${selectedCategory === category ? "bg-accent/20 text-accent" : "text-primary"
-                          }`}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-background transition-colors touch-manipulation ${selectedCategory === category.name ? "bg-accent/20 text-accent" : "text-primary"}`}
                       >
-                        {category}
+                        {category.name}
                       </button>
                     ))}
                   </div>
@@ -150,15 +190,22 @@ export default function InventoryTable() {
         </div>
       </div>
 
+      {isLoading && (
+        <div className="p-8 text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          <p className="mt-2 text-muted">Loading products...</p>
+        </div>
+      )}
+
       {/* Mobile Card Layout */}
       <div className="block sm:hidden">
-        {filteredData.map((item) => (
+        {filteredData.map((item: InventoryItem) => (
           <div key={item.id} className="p-4 border-b border-custom last:border-b-0">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <h3 className="font-medium text-primary">{item.name}</h3>
                 <p className="text-sm text-muted">{item.sku}</p>
-                <p className="text-sm text-muted">{item.category}</p>
+                <p className="text-sm text-muted">{getCategoryName(item.categoryId)}</p>
               </div>
               <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
                 {item.status}
@@ -208,13 +255,13 @@ export default function InventoryTable() {
             </tr>
           </thead>
           <tbody className="bg-surface divide-y divide-custom">
-            {filteredData.map((item) => (
+            {filteredData.map((item: InventoryItem) => (
               <tr key={item.id} className="hover:bg-background transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="font-medium text-primary">{item.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{item.sku}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{item.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{getCategoryName(item.categoryId)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-medium text-primary">{item.stock}</span>
                 </td>
@@ -247,16 +294,15 @@ export default function InventoryTable() {
         </table>
       </div>
 
-      {filteredData.length === 0 && (
+      {filteredData.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <p className="text-muted">No products found matching your criteria.</p>
         </div>
       )}
 
-
       {editProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface rounded-xl border border-custom w-full max-w-md">
+          <div className="bg-surface rounded-xl border border-custom w-full max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-custom">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center">
@@ -267,70 +313,132 @@ export default function InventoryTable() {
                   <p className="text-sm text-muted">Update inventory information</p>
                 </div>
               </div>
-              {/* <button
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="p-2 text-muted hover:text-primary transition-colors touch-manipulation disabled:opacity-50"
+              <button
+                onClick={() => setEditProduct(null)}
+                className="p-2 text-muted hover:text-primary transition-colors touch-manipulation"
               >
                 <X className="w-5 h-5" />
-              </button> */}
+              </button>
             </div>
 
-            <form  className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-primary mb-2">Product Name *</label>
-                <input
-                  type="text"
-                  value={editProduct.name}
-                  onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
-                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
-                  placeholder="Product Name"
-                />
-                <label className="block text-sm font-medium text-primary mb-2 mt-2">Category Name *</label>
-                <input
-                  type="text"
-                  value={editProduct.category}
-                  onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
-                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
-                  placeholder="Category Name"
-                />
-                 <label className="block text-sm font-medium text-primary mb-2 mt-2">Stock Number*</label>
-                <input
-                  type="number"
-                  value={editProduct.stock}
-                  onChange={(e) => setEditProduct({ ...editProduct, stock: Number(e.target.value) })}
-                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
-                  placeholder="Stock"
-                />
-                 <label className="block text-sm font-medium text-primary mb-2 mt-2">Threshold Number *</label>
-                <input
-                  type="number"
-                  value={editProduct.threshold}
-                  onChange={(e) => setEditProduct({ ...editProduct, threshold: Number(e.target.value) })}
-                  className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
-                  placeholder="Threshold"
-                />
-              </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+              <form className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">SKU *</label>
+                      <input
+                        type="text"
+                        value={editProduct.sku}
+                        onChange={(e) => setEditProduct({ ...editProduct, sku: e.target.value })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        placeholder="SKU"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Product Name *</label>
+                      <input
+                        type="text"
+                        value={editProduct.name}
+                        onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        placeholder="Product Name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Barcode</label>
+                      <input
+                        type="text"
+                        value={editProduct.barcode}
+                        onChange={(e) => setEditProduct({ ...editProduct, barcode: e.target.value })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        placeholder="Barcode"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Category *</label>
+                      <select
+                        value={editProduct.categoryId}
+                        onChange={(e) => setEditProduct({ ...editProduct, categoryId: Number(e.target.value) })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                      >
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Stock Number *</label>
+                      <input
+                        type="number"
+                        value={editProduct.stock}
+                        onChange={(e) => setEditProduct({ ...editProduct, stock: Number(e.target.value) })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        placeholder="Stock"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Threshold Number *</label>
+                      <input
+                        type="number"
+                        value={editProduct.threshold}
+                        onChange={(e) => setEditProduct({ ...editProduct, threshold: Number(e.target.value) })}
+                        className="w-full px-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        placeholder="Threshold"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-primary mb-2">Expiry Date</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={editProduct.expiryDate || ''}
+                          onChange={(e) => setEditProduct({ ...editProduct, expiryDate: e.target.value || null })}
+                          className="flex-1 px-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEditProduct({ ...editProduct, expiryDate: null })}
+                          className={`px-4 py-3 border rounded-xl font-medium transition-all duration-200 touch-manipulation focus:outline-none focus:ring-2 focus:ring-accent/20 ${
+                            editProduct.expiryDate === null 
+                              ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 active:bg-green-700' 
+                              : 'border-custom bg-background text-primary hover:bg-surface hover:border-accent active:bg-accent/10 active:border-accent/50'
+                          }`}
+                        >
+                          No Expiry
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setEditProduct(null)}
-                  className="flex-1 px-4 py-3 border border-custom bg-background text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50"
-            >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setInventory((prev) =>
-                      prev.map((item) => (item.id === editProduct.id ? { ...editProduct } : item))
-                    )
-                    setEditProduct(null)
-                  }}
-                  className="bg-[#7C3AED] text-white hover:bg-[#7C3AED] flex-1 px-4 py-3 border border-custom  text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50">
-                  Update Inventory
-                </button>
-              </div>
-            </form>
+                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-custom">
+                  <button
+                    type="button"
+                    onClick={() => setEditProduct(null)}
+                    className="flex-1 px-4 py-3 border border-custom bg-background text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUpdateProduct}
+                    className="bg-[#7C3AED] text-white hover:bg-[#7C3AED] flex-1 px-4 py-3 border border-custom text-primary rounded-xl font-medium hover:bg-surface transition-colors touch-manipulation disabled:opacity-50">
+                    Update Inventory
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

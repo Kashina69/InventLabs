@@ -5,25 +5,25 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { X, Edit } from "lucide-react"
 
+interface Category {
+  id: number;
+  name: string;
+  businessId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
+
 interface EditCategoryModalProps {
   isOpen: boolean
   onClose: () => void
-  onEdit: (category: any) => void
-  category: any
+  onEdit: (category: { name: string }) => void
+  category: Category | null
 }
-
-// Placeholder business data
-const businesses = [
-  { id: "business-1", name: "Tech Store" },
-  { id: "business-2", name: "Home Depot" },
-  { id: "business-3", name: "Media World" },
-  { id: "business-4", name: "Fashion Hub" },
-]
 
 export default function EditCategoryModal({ isOpen, onClose, onEdit, category }: EditCategoryModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    businessId: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,7 +32,6 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
     if (category) {
       setFormData({
         name: category.name || "",
-        businessId: category.businessId || "",
       })
     }
   }, [category])
@@ -44,10 +43,6 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
       newErrors.name = "Category name is required"
     } else if (formData.name.trim().length < 2) {
       newErrors.name = "Category name must be at least 2 characters"
-    }
-
-    if (!formData.businessId) {
-      newErrors.businessId = "Business selection is required"
     }
 
     setErrors(newErrors)
@@ -62,15 +57,8 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const selectedBusiness = businesses.find((b) => b.id === formData.businessId)
-
       onEdit({
         name: formData.name.trim(),
-        businessId: formData.businessId,
-        businessName: selectedBusiness?.name || "",
       })
 
       setErrors({})
@@ -81,7 +69,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
@@ -140,31 +128,10 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-2">Business *</label>
-            <select
-              name="businessId"
-              value={formData.businessId}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              className={`w-full px-4 py-3 border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50 ${
-                errors.businessId ? "border-danger bg-danger/10" : "border-custom"
-              }`}
-            >
-              <option value="">Select a business</option>
-              {businesses.map((business) => (
-                <option key={business.id} value={business.id}>
-                  {business.name}
-                </option>
-              ))}
-            </select>
-            {errors.businessId && <p className="mt-1 text-sm text-danger">{errors.businessId}</p>}
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-primary mb-2">Created By</label>
             <input
               type="text"
-              value={category.createdBy}
+              value={category.createdBy || "Unknown User"}
               disabled
               className="w-full px-4 py-3 border border-custom bg-background/50 text-muted rounded-xl"
             />

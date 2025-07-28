@@ -14,20 +14,28 @@ interface JWTPayload {
 
 export const JWT_KEY = 'auth_token'
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined'
+
 export const jwtUtils = {
   // Store token in localStorage
   setToken: (token: string) => {
-    localStorage.setItem(JWT_KEY, token)
+    if (isBrowser) {
+      localStorage.setItem(JWT_KEY, token)
+    }
   },
 
   // Get token from localStorage
   getToken: (): string | null => {
+    if (!isBrowser) return null
     return localStorage.getItem(JWT_KEY)
   },
 
   // Remove token from localStorage
   removeToken: () => {
-    localStorage.removeItem(JWT_KEY)
+    if (isBrowser) {
+      localStorage.removeItem(JWT_KEY)
+    }
   },
 
   // Decode token and return payload

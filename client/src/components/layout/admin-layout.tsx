@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         !user ||
         user?.role !== "ADMIN"
       ) {
-        router.push("/login");
+        // router.push("/login");
       }
     }
   }, [user, isLoading, isAuthenticated, router]);

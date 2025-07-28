@@ -37,7 +37,7 @@ export default function App() {
         // Redirect based on user role
         if (user?.role === "ADMIN") {
           router.push("/admin/dashboard");
-        } else if (user?.role === "staff") {
+        } else if (user?.role === "STAFF") {
           router.push("/staff/dashboard");
         } else {
           router.push("/admin/dashboard"); // Default fallback

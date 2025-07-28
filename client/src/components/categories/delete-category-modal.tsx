@@ -3,11 +3,20 @@
 import { useState } from "react"
 import { X, Trash2, AlertTriangle } from "lucide-react"
 
+interface Category {
+  id: number;
+  name: string;
+  businessId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
+
 interface DeleteCategoryModalProps {
   isOpen: boolean
   onClose: () => void
   onDelete: () => void
-  category: any
+  category: Category | null
 }
 
 export default function DeleteCategoryModal({ isOpen, onClose, onDelete, category }: DeleteCategoryModalProps) {
@@ -17,8 +26,6 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
     setIsDeleting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
       onDelete()
     } catch (error) {
       console.error("Error deleting category:", error)
@@ -85,11 +92,11 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
             </div>
             <div className="text-sm">
               <span className="text-muted">Created by:</span>
-              <span className="text-primary ml-2">{category.createdBy}</span>
+              <span className="text-primary ml-2">{category.createdBy || "Unknown User"}</span>
             </div>
             <div className="text-sm">
-              <span className="text-muted">Business:</span>
-              <span className="text-primary ml-2">{category.businessName}</span>
+              <span className="text-muted">Created:</span>
+              <span className="text-primary ml-2">{new Date(category.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
 
