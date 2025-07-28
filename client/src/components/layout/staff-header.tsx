@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Menu, Bell, User, LogOut, Settings } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/auth"
 
 interface StaffHeaderProps {
   onMenuClick: () => void
@@ -10,7 +10,7 @@ interface StaffHeaderProps {
 
 export default function StaffHeader({ onMenuClick }: StaffHeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuthStore()
 
   return (
     <header className="h-16 bg-surface border-b border-custom flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
