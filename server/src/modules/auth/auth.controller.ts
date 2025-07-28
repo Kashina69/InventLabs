@@ -12,9 +12,25 @@ export const register = async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const { id: businessId } = await Business.create({ name: business_name });
   const user = await User.create({ name, email, passwordHash, role: 'ADMIN', phone, businessId });
-  const token = signToken({ id: user.id, email: user.email, name: user.name, role: 'ADMIN', businessId: user.businessId, });
+  const token = signToken({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: 'ADMIN',
+    businessId: user.businessId,
+  });
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-  res.status(201).json({ message: 'Registered successfully' });
+  res.status(201).json({
+    message: 'Registered successfully',
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: 'ADMIN',
+      businessId: user.businessId,
+    },
+  });
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -34,7 +50,17 @@ export const login = async (req: Request, res: Response) => {
     businessId: user.businessId,
   });
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-  res.json({ message: 'Login successful' });
+  res.json({
+    message: 'Login successful',
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: 'ADMIN',
+      businessId: user.businessId,
+    },
+  });
 };
 
 export const logout = (req: Request, res: Response) => {

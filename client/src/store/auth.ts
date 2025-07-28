@@ -2,13 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/config/axios";
 import { jwtUtils } from "@/utils/jwt";
-import Cookies from "js-cookie";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "staff";
+  role: "ADMIN" | "STAFF";
   businessName?: string;
   industryType?: string;
   phone?: string;
@@ -71,11 +70,10 @@ export const useAuthStore = create<AuthStore>()(
             password,
           });
 
-          const { user } = response.data;
+          const { token, user } = response.data;
 
           // Store the token
 
-          const token: any = Cookies.get("token");
           jwtUtils.setToken(token);
 
           set({

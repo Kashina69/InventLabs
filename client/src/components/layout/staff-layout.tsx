@@ -26,7 +26,7 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
   useEffect(() => {
     if (!isLoading) {
       // Check if user is authenticated and has staff role
-      if (!isAuthenticated || !jwtUtils.isAuthenticated() || !user || user.role !== "staff") {
+      if (!isAuthenticated || !jwtUtils.isAuthenticated() || !user || user.role !== "STAFF") {
         router.push("/login")
       }
     }

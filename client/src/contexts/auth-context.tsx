@@ -8,7 +8,7 @@ interface User {
   id: string
   name: string
   email: string
-  role: "admin" | "staff"
+  role: "ADMIN" | "STAFF"
   businessName?: string
   industryType?: string
 }
@@ -111,7 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: Date.now().toString(),
         name: data.name,
         email: data.email,
-        role: "admin",
         businessName: data.businessName,
         industryType: data.industryType,
       }

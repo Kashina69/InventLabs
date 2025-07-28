@@ -31,11 +31,11 @@ export default function App() {
   useEffect(() => {
     if (!isLoading) {
       // Check if user is authenticated via JWT token
-      if (!isAuthenticated || !jwtUtils.isAuthenticated()) {
-        router.push("/login");
+      if (!jwtUtils.isAuthenticated()) {
+        // router.push("/login");
       } else {
         // Redirect based on user role
-        if (user?.role === "admin") {
+        if (user?.role === "ADMIN") {
           router.push("/admin/dashboard");
         } else if (user?.role === "staff") {
           router.push("/staff/dashboard");

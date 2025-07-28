@@ -4,7 +4,7 @@ interface JWTPayload {
   id: string
   name: string
   email: string
-  role: "admin" | "staff"
+  role: "ADMIN" | "ADMIN"
   businessName?: string
   industryType?: string
   phone?: string

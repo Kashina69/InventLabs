@@ -9,6 +9,7 @@ import Link from "next/link"
 import { Eye, EyeOff, LogIn, Package, AlertCircle } from "lucide-react"
 import { useAuthStore } from "@/store/auth"
 import { useRouter } from "next/navigation"
+import { jwtUtils } from "@/utils/jwt"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -34,12 +35,13 @@ export default function Login() {
       password: "",
     },
   })
+  console.log( jwtUtils.isAuthenticated())
 
   const onSubmit = async (data: LoginForm) => {
     try {
       const user = await login(data.email, data.password)
       // Redirect based on user role
-      if (user?.role === "admin") {
+      if (user?.role === "ADMIN") {
         router.push("/admin/dashboard")
       } else if (user?.role === "staff") {
         router.push("/staff/dashboard")
