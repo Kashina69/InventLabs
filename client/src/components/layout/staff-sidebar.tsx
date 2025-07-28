@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Package, ClipboardList, LogOut, X,FileText,BarChart3, } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/auth"
 
 interface StaffSidebarProps {
   isOpen: boolean
@@ -18,7 +18,7 @@ const navigation = [
 
 export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuthStore()
 
   return (
     <>
