@@ -3,6 +3,7 @@ import Products from './Product.model.js';
 import getBusinessIdFromReq from '../../utils/getBusinessIdFromReq.utils.js';
 import Category from '../category/Category.model.js';
 import { Op } from 'sequelize';
+import InventoryLog from '../inventoryLogs/InventoryLog.model.js';
 
 export const getAllProducts = async (req: Request, res: Response) => {
   const businessId = getBusinessIdFromReq(req);
@@ -92,6 +93,21 @@ export const createProduct = async (req: Request, res: Response) => {
     ...rest,
   });
 
+  // Inventory log for new product
+  try {
+    await InventoryLog.create({
+      productId: product.id,
+      businessId,
+      type: 'NEW',
+      quantity: product.stock ?? 0,
+      userId: (req as any).user?.id,
+      timestamp: new Date(),
+    });
+  } catch (err) {
+    // Optionally log error but do not block product creation
+    console.error('Failed to create inventory log for new product:', err);
+  }
+
   res.status(201).json(product);
 };
 
@@ -124,7 +140,38 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (existingBarcode) return res.status(409).json({ message: 'Barcode already exists' });
   }
 
+  // Detect stock change
+  let logType: 'ADD' | 'REDUCED' | null = null;
+  let logQuantity = 0;
+  if (typeof stock === 'number' && stock !== product.stock) {
+    if (stock > product.stock) {
+      logType = 'ADD';
+      logQuantity = stock - product.stock;
+    } else if (stock < product.stock) {
+      logType = 'REDUCED';
+      logQuantity = product.stock - stock;
+    }
+  }
+
   await product.update({ sku, name, barcode, categoryId, stock, threshold, expiryDate });
+
+  // Inventory log for stock change
+  if (logType && logQuantity > 0) {
+    try {
+      await InventoryLog.create({
+        productId: product.id,
+        businessId,
+        type: logType,
+        quantity: logQuantity,
+        userId: (req as any).user?.id,
+        timestamp: new Date(),
+      });
+    } catch (err) {
+      // Optionally log error but do not block product update
+      console.error('Failed to create inventory log for stock update:', err);
+    }
+  }
+
   res.json(product);
 };
 

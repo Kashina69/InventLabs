@@ -8,7 +8,7 @@ class InventoryLog extends Model {
   public id!: number;
   public productId!: number;
   public businessId!: number;
-  public type!: 'ADD' | 'REMOVE' | 'RETURN' | 'SALE';
+  public type!: 'ADD' | 'REDUCED' | 'RETURN' | 'SALE' | 'NEW' ;
   public quantity!: number;
   public timestamp!: Date;
 
@@ -23,7 +23,7 @@ InventoryLog.init(
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     productId: { type: DataTypes.INTEGER, allowNull: false },
     businessId: { type: DataTypes.INTEGER, allowNull: false },
-    type: { type: DataTypes.ENUM('ADD', 'REMOVE', 'RETURN', 'SALE'), allowNull: false },
+    type: { type: DataTypes.ENUM('ADD', 'REDUCED', 'RETURN', 'SALE', 'NEW'), allowNull: false },
     quantity: { type: DataTypes.INTEGER, allowNull: false },
     userId: { type: DataTypes.INTEGER, allowNull: false },
     timestamp: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },

@@ -21,7 +21,7 @@ router.use('/inventory-logs', authenticate, inventoryLogsRoutes);
 router.use('/user', userRoutes);
 router.use('/analytics', authenticate, analyticsRoutes);
 // router.use('/backup', backupRoutes);
-router.use('/backup', authenticate, isAdmin, backupRoutes);
+// router.use('/backup', authenticate, isAdmin, backupRoutes);
 router.use('/dashboard', authenticate, dashboardRoutes)
 router.use('/alerts', authenticate, alertsRoutes);
 
