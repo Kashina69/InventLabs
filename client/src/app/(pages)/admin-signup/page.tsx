@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Link from "next/link"
-import { Eye, EyeOff, UserPlus, Package, Building, StarIcon as Industry, User } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { Eye, EyeOff, UserPlus, Package, Building, StarIcon as Industry, User, Phone } from "lucide-react"
+import { useAuthStore } from "@/store/auth"
+import { useRouter } from "next/navigation"
 
 const industryTypes = [
   "Technology",
@@ -36,6 +37,11 @@ const adminSignupSchema = z
       .min(8, "Password must be at least 8 characters")
       .max(100, "Password must be less than 100 characters"),
     confirmPassword: z.string(),
+    phone: z
+      .string()
+      .min(10, "Phone number must be at least 10 digits")
+      .max(15, "Phone number must be less than 15 digits")
+      .regex(/^[0-9]+$/, "Phone number must contain only digits"),
     businessName: z
       .string()
       .min(2, "Business name must be at least 2 characters")
@@ -52,7 +58,8 @@ type AdminSignupForm = z.infer<typeof adminSignupSchema>
 export default function AdminSignup() {
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
-  const { registerAdmin, isLoading } = useAuth()
+  const { register: registerUser, isLoading } = useAuthStore()
+  const router = useRouter()
 
   const {
     register,
@@ -66,6 +73,7 @@ export default function AdminSignup() {
       email: "",
       password: "",
       confirmPassword: "",
+      phone: "",
       businessName: "",
       industryType: "",
     },
@@ -73,13 +81,14 @@ export default function AdminSignup() {
 
   const onSubmit = async (data: AdminSignupForm) => {
     try {
-      await registerAdmin({
+      await registerUser({
         name: data.name,
         email: data.email,
         password: data.password,
-        businessName: data.businessName,
-        industryType: data.industryType,
+        phone: data.phone,
+        business_name: data.businessName,
       })
+      router.push("/admin/dashboard")
     } catch (err) {
       setError("root", {
         message: err instanceof Error ? err.message : "Registration failed",
@@ -190,6 +199,23 @@ export default function AdminSignup() {
                 </div>
                 {errors.confirmPassword && <p className="mt-1 text-sm text-danger">{errors.confirmPassword.message}</p>}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">Phone Number *</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
+                <input
+                  {...register("phone")}
+                  type="tel"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-background text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${
+                    errors.phone ? "border-danger bg-danger/10" : "border-custom"
+                  }`}
+                  placeholder="Enter your phone number"
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.phone && <p className="mt-1 text-sm text-danger">{errors.phone.message}</p>}
             </div>
           </div>
 

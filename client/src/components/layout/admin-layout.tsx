@@ -5,7 +5,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Sidebar from "./sidebar"
 import Header from "./header"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/auth"
+import { jwtUtils } from "@/utils/jwt"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -13,15 +14,23 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isAuthenticated, initializeAuth } = useAuthStore()
   const router = useRouter()
+
+  // Initialize authentication on component mount
+  useEffect(() => {
+    initializeAuth()
+  }, [initializeAuth])
 
   // Protect admin routes
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "admin")) {
-      router.push("/login")
+    if (!isLoading) {
+      // Check if user is authenticated and has admin role
+      if (!isAuthenticated || !jwtUtils.isAuthenticated() || !user || user.role !== "admin") {
+        router.push("/login")
+      }
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, isAuthenticated, router])
 
   if (isLoading) {
     return (
@@ -31,7 +40,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     )
   }
 
-  if (!user) {
+  if (!user || !isAuthenticated) {
     return null // Will redirect in useEffect
   }
 

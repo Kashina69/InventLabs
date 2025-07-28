@@ -7,7 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Link from "next/link"
 import { Eye, EyeOff, LogIn, Package, AlertCircle } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/auth"
+import { useRouter } from "next/navigation"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -18,7 +19,8 @@ type LoginForm = z.infer<typeof loginSchema>
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
-  const { login, isLoading } = useAuth()
+  const { login, isLoading } = useAuthStore()
+  const router = useRouter()
 
   const {
     register,
@@ -35,7 +37,15 @@ export default function Login() {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      await login(data.email, data.password)
+      const user = await login(data.email, data.password)
+      // Redirect based on user role
+      if (user?.role === "admin") {
+        router.push("/admin/dashboard")
+      } else if (user?.role === "staff") {
+        router.push("/staff/dashboard")
+      } else {
+        router.push("/admin/dashboard") // Default fallback
+      }
     } catch (err) {
       setError("root", {
         message: err instanceof Error ? err.message : "Login failed",
