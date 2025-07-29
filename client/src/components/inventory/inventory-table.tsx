@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Search, Filter, X, Edit, Trash2, MoreHorizontal, Plus, ChevronDown, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import { useProductStore } from "@/store/product"
-import { useInventory } from "@/contexts/inventory-context"
 import SellProductModal from "./sell-product-modal"
 
 // Use the Product type from the context
@@ -38,7 +37,82 @@ export default function InventoryTable() {
   } = useProductStore()
 
   // Context for data
-  const { products } = useInventory()
+  // const { products } = useInventory()
+  // Dummy products array for development/testing
+  const products: Product[] = [
+    {
+      id: 1,
+      name: "Apple iPhone 14 Pro",
+      sku: "APL-IP14P-256GB",
+      category: "Electronics",
+      stock: 25,
+      threshold: 10,
+      status: "In Stock"
+    },
+    {
+      id: 2,
+      name: "Samsung 4K Smart TV",
+      sku: "SMSNG-TV-4K55",
+      category: "Electronics",
+      stock: 5,
+      threshold: 8,
+      status: "Low Stock"
+    },
+    {
+      id: 3,
+      name: "Men's Running Shoes",
+      sku: "SHOE-MEN-RUN-BLK",
+      category: "Footwear",
+      stock: 0,
+      threshold: 5,
+      status: "Out of Stock"
+    },
+    {
+      id: 4,
+      name: "Cotton T-Shirt",
+      sku: "TSHIRT-CTN-WHT",
+      category: "Clothing",
+      stock: 40,
+      threshold: 15,
+      status: "In Stock"
+    },
+    {
+      id: 5,
+      name: "Blender Pro 500",
+      sku: "BLEND-PRO-500",
+      category: "Home & Garden",
+      stock: 7,
+      threshold: 10,
+      status: "Low Stock"
+    },
+    {
+      id: 6,
+      name: "Women's Sandals",
+      sku: "SANDAL-WOM-BEIGE",
+      category: "Footwear",
+      stock: 18,
+      threshold: 8,
+      status: "In Stock"
+    },
+    {
+      id: 7,
+      name: "LED Desk Lamp",
+      sku: "LAMP-LED-DESK",
+      category: "Home & Garden",
+      stock: 0,
+      threshold: 3,
+      status: "Out of Stock"
+    },
+    {
+      id: 8,
+      name: "Denim Jeans",
+      sku: "JEANS-DNM-BLU",
+      category: "Clothing",
+      stock: 12,
+      threshold: 10,
+      status: "In Stock"
+    }
+  ]
 
   // Build unique category list from products
   const categoryList = [

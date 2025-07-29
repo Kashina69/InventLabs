@@ -2,14 +2,150 @@
 
 import { useState } from "react"
 import { Search, Calendar, ShoppingCart, User, Mail } from "lucide-react"
-import { useInventory } from "@/contexts/inventory-context"
 
 export default function SalesTable() {
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedDate, setSelectedDate] = useState("")
     const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-    const { transactions } = useInventory()
+    const transactions = [
+        {
+            id: 1,
+            type: "sale",
+            productName: "Apple iPhone 14 Pro",
+            productSku: "APL-IP14P-256GB",
+            quantity: 2,
+            price: 999,
+            total: 1998,
+            date: "2024-06-01",
+            time: "10:15",
+            customerName: "John Doe",
+            customerEmail: "john.doe@example.com",
+            user: "Alice Smith",
+            notes: "Requested gift wrap"
+        },
+        {
+            id: 2,
+            type: "sale",
+            productName: "Samsung 4K Smart TV",
+            productSku: "SMSNG-TV-4K55",
+            quantity: 1,
+            price: 699,
+            total: 699,
+            date: "2024-06-02",
+            time: "14:30",
+            customerName: "Jane Smith",
+            customerEmail: "jane.smith@example.com",
+            user: "Bob Johnson",
+            notes: "Delivery scheduled for 2024-06-05"
+        },
+        {
+            id: 3,
+            type: "sale",
+            productName: "Men's Running Shoes",
+            productSku: "SHOE-MEN-RUN-BLK",
+            quantity: 3,
+            price: 120,
+            total: 360,
+            date: "2024-06-03",
+            time: "09:45",
+            customerName: "Carlos Rivera",
+            customerEmail: "carlos.rivera@example.com",
+            user: "Alice Smith",
+            notes: ""
+        },
+        {
+            id: 4,
+            type: "sale",
+            productName: "Cotton T-Shirt",
+            productSku: "TSHIRT-CTN-WHT",
+            quantity: 5,
+            price: 25,
+            total: 125,
+            date: "2024-06-01",
+            time: "16:20",
+            customerName: "Emily Chen",
+            customerEmail: "emily.chen@example.com",
+            user: "Bob Johnson",
+            notes: "Requested size M for all"
+        },
+        {
+            id: 5,
+            type: "sale",
+            productName: "Blender Pro 500",
+            productSku: "BLEND-PRO-500",
+            quantity: 1,
+            price: 89,
+            total: 89,
+            date: "2024-06-04",
+            time: "11:10",
+            customerName: "Sarah Lee",
+            customerEmail: "sarah.lee@example.com",
+            user: "Alice Smith",
+            notes: "First-time customer"
+        },
+        {
+            id: 6,
+            type: "sale",
+            productName: "Women's Sandals",
+            productSku: "SANDAL-WOM-BEIGE",
+            quantity: 2,
+            price: 45,
+            total: 90,
+            date: "2024-06-02",
+            time: "13:05",
+            customerName: "Olivia Brown",
+            customerEmail: "olivia.brown@example.com",
+            user: "Bob Johnson",
+            notes: ""
+        },
+        {
+            id: 7,
+            type: "sale",
+            productName: "LED Desk Lamp",
+            productSku: "LAMP-LED-DESK",
+            quantity: 4,
+            price: 30,
+            total: 120,
+            date: "2024-06-03",
+            time: "15:50",
+            customerName: "David Kim",
+            customerEmail: "david.kim@example.com",
+            user: "Alice Smith",
+            notes: "Bulk order for office"
+        },
+        {
+            id: 8,
+            type: "sale",
+            productName: "Denim Jeans",
+            productSku: "JEANS-DNM-BLU",
+            quantity: 2,
+            price: 60,
+            total: 120,
+            date: "2024-06-04",
+            time: "17:25",
+            customerName: "Sophia Martinez",
+            customerEmail: "sophia.martinez@example.com",
+            user: "Bob Johnson",
+            notes: ""
+        },
+        // Example of a non-sale transaction (should be filtered out)
+        {
+            id: 9,
+            type: "restock",
+            productName: "Apple iPhone 14 Pro",
+            productSku: "APL-IP14P-256GB",
+            quantity: 10,
+            price: 950,
+            total: 9500,
+            date: "2024-05-30",
+            time: "08:00",
+            customerName: null,
+            customerEmail: null,
+            user: "Warehouse",
+            notes: "Restocked from supplier"
+        }
+    ]
 
     // Filter only sales transactions
     const salesTransactions = transactions.filter((transaction) => transaction.type === "sale")

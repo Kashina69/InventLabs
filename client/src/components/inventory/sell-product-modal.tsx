@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { X, ShoppingCart, AlertCircle } from "lucide-react"
-import { useInventory } from "@/contexts/inventory-context"
 
 const sellProductSchema = z.object({
   quantity: z.coerce.number().min(1, "Quantity must be at least 1").max(1000, "Quantity cannot exceed 1000"),
@@ -35,8 +34,10 @@ interface SellProductModalProps {
 
 export default function SellProductModal({ isOpen, onClose, product }: SellProductModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { sellProduct } = useInventory()
 
+  function sellProduct(productId:any, productDetails:any){
+    console.log(productId, productDetails)
+  }
   const {
     register,
     handleSubmit,
