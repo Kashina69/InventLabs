@@ -117,7 +117,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         // Remove token from localStorage
         jwtUtils.removeToken();
-
+        api.post("/auth/logout");
         set({
           user: null,
           isAuthenticated: false,
