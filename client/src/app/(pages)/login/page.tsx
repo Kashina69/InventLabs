@@ -152,15 +152,10 @@ export default function Login() {
 
           <div className="pt-4 border-t border-custom">
             <p className="text-xs text-muted mb-3">Demo Accounts:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-muted">
+            <div className="text-xs text-muted">
               <div className="bg-background rounded-lg p-3">
                 <p className="font-medium text-primary mb-1">Admin</p>
                 <p>admin@example.com</p>
-                <p>password123</p>
-              </div>
-              <div className="bg-background rounded-lg p-3">
-                <p className="font-medium text-primary mb-1">Staff</p>
-                <p>staff@example.com</p>
                 <p>password123</p>
               </div>
             </div>
