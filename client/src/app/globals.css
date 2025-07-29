@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  
+  --background: #1a1b1f;
+  --foreground: #ededed;
+
 }
 
 @theme inline {
@@ -98,7 +98,7 @@ body {
   }
 
   .mobile-table-row {
-    @apply block sm:table-row border-b  mb-4 sm:mb-0 sm:bg-transparent rounded-lg sm:rounded-none p-4 sm:p-0;
+    @apply block sm:table-row border-b mb-4 sm:mb-0 sm:bg-transparent rounded-lg sm:rounded-none p-4 sm:p-0;
   }
 
   .mobile-table-cell {
@@ -118,27 +118,35 @@ body {
 .bg-background {
   background-color: var(--background);
 }
+
 .bg-surface {
   background-color: var(--surface);
 }
+
 .bg-accent {
   background-color: var(--accent);
 }
+
 .bg-danger {
   background-color: var(--danger);
 }
+
 .text-primary {
   color: var(--text);
 }
+
 .text-muted {
   color: var(--muted);
 }
+
 .text-accent {
   color: var(--accent);
 }
+
 .text-danger {
   color: var(--danger);
 }
+
 .border-custom {
   border-color: var(--border);
 }

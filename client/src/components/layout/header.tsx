@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, Bell, User, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -12,6 +13,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, logout } = useAuthStore();
+  const router = useRouter();
 
   return (
     <header className="h-16 bg-surface border-b border-custom flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
@@ -79,8 +81,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   Settings
                 </Link>
                 <button
-                  onClick={logout}
-                  className="w-full   flex items-center gap-3 px-3 py-2 text-sm  text-red-600 hover:text-danger hover:bg-background transition-colors "
+                  onClick={() => {
+                    logout();
+                    router.push("/login");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:text-danger hover:bg-background transition-colors "
                 >
                   <LogOut className="w-4 h-4 text-red-600" />
                   Sign Out
