@@ -12,6 +12,7 @@ import {
   Users,
   Settings,
   X,
+  ShoppingCart,
 } from "lucide-react"
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ const navigation = [
   { name: "Add Product", href: "/add-product", icon: Plus },
   { name: "Staff Management", href: "/admin/staff-management", icon: Users },
   { name: "Inventory Logs", href: "/logs", icon: FileText },
+  { name: "Sales", href: "/sales", icon: ShoppingCart },
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Alerts", href: "/alerts", icon: AlertTriangle },
   { name: "Settings", href: "/settings", icon: Settings },
