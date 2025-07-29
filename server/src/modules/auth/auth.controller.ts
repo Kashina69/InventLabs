@@ -19,7 +19,7 @@ export const register = async (req: Request, res: Response) => {
     role: 'ADMIN',
     businessId: user.businessId,
   });
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none',});
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
   res.status(201).json({
     message: 'Registered successfully',
     token,
@@ -49,7 +49,7 @@ export const login = async (req: Request, res: Response) => {
     role: user.role,
     businessId: user.businessId,
   });
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none', });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
   res.json({
     message: 'Login successful',
     token,
