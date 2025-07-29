@@ -11,7 +11,7 @@ interface JwtPayload {
 
 export const authenticate = (req: any, res: Response, next: NextFunction) => {
   const token = req.cookies?.token;
-  if (!token) return res.status(401).json({ message: 'Unauthorized: No token' });
+  if (!token) {console.log("401 comming"); return res.status(401).json({ message: 'Unauthorized: No token' })};
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
@@ -39,6 +39,7 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
   if (user) {
     return next();
   }
+  console.log("401 comming isAdmin"); 
   return res.status(403).json({ message: 'Not authorized' });
 };
 

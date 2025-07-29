@@ -7,7 +7,9 @@ export default function App() {
   useEffect(() => {
       if (!localStorage.getItem("auth_token")) {
         router.push("/login");
-      } 
+      } else{
+        router.push("/admin/dashboard")
+      }
   }, [ router]);
 
 
