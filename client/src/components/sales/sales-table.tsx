@@ -171,7 +171,7 @@ export default function SalesTable() {
 
                     <div className="flex flex-wrap-reverse items-center gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted sm:w-4 w-auto h-4" />
                             <input
                                 type="text"
                                 placeholder="Search sales..."
@@ -222,12 +222,7 @@ export default function SalesTable() {
                                 <div className="text-xs text-muted">{transaction.time}</div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted">Sold by: {transaction.user}</span>
-                            {transaction.notes && (
-                                <span className="text-xs text-muted bg-background px-2 py-1 rounded">{transaction.notes}</span>
-                            )}
-                        </div>
+                        
                     </div>
                 ))}
             </div>
@@ -244,7 +239,6 @@ export default function SalesTable() {
                             <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">
                                 Date & Time
                             </th>
-                            <th className="px-6 py-4 text-left text-xs font-medium text-muted uppercase tracking-wider">Notes</th>
                         </tr>
                     </thead>
                     <tbody className="bg-surface divide-y divide-custom">
@@ -273,7 +267,6 @@ export default function SalesTable() {
                                     <div className="text-sm text-primary">{transaction.date}</div>
                                     <div className="text-xs text-muted">{transaction.time}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{transaction.notes || "-"}</td>
                             </tr>
                         ))}
                     </tbody>
