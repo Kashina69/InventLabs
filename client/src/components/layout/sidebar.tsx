@@ -55,7 +55,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
                 <Package className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-semibold text-primary">Inventory</span>
+              <span className="text-lg font-semibold text-primary">InventLabs</span>
             </div>
             <button
               onClick={onClose}
