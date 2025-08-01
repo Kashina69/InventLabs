@@ -131,7 +131,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
             <label className="block text-sm font-medium text-primary mb-2">Created By</label>
             <input
               type="text"
-              value={category.createdBy || "Unknown User"}
+              value={category.createdBy || "Admin"}
               disabled
               className="w-full px-4 py-3 border border-custom bg-background/50 text-muted rounded-xl"
             />

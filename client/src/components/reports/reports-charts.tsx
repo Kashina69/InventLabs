@@ -97,7 +97,7 @@ export default function ReportsCharts() {
       <div className="flex gap-4 items-center mb-4">
         <label className="font-medium">Filter by:</label>
         <select
-          className="border rounded px-2 py-1"
+          className="border bg-surface rounded px-2 py-1"
           value={filter}
           onChange={handleFilterChange}
         >
@@ -106,7 +106,7 @@ export default function ReportsCharts() {
         </select>
         {filter === "category" && (
           <select
-            className="border rounded px-2 py-1"
+            className="border rounded bg-surface px-2 py-1 bg"
             value={selectedCategoryId ?? ""}
             onChange={handleCategoryChange}
           >

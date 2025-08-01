@@ -108,7 +108,7 @@ export default function CategoriesTable() {
   }
 
   const formatCreatedBy = (category: Category) => {
-    return category.createdBy || "Unknown User"
+    return category.createdBy || "Admin"
   }
 
   return (

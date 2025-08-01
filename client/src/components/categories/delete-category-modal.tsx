@@ -92,7 +92,7 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
             </div>
             <div className="text-sm">
               <span className="text-muted">Created by:</span>
-              <span className="text-primary ml-2">{category.createdBy || "Unknown User"}</span>
+              <span className="text-primary ml-2">{category.createdBy || "Admin"}</span>
             </div>
             <div className="text-sm">
               <span className="text-muted">Created:</span>
