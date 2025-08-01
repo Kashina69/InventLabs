@@ -130,6 +130,7 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         // Don't persist user data, rely on JWT token instead
         isAuthenticated: state.isAuthenticated,
+        user: state.user,
       }),
     }
   )

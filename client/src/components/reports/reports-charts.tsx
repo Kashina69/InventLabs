@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -43,9 +43,7 @@ export default function ReportsCharts() {
   } = useReportStore();
   const { categories, fetchCategories } = useCategoryStore();
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   // Fetch categories if filter is category
   useEffect(() => {
@@ -85,12 +83,10 @@ export default function ReportsCharts() {
     setSelectedCategoryId(Number(e.target.value));
   };
 
-  // Sort distribution by stock descending for bar chart
-  const sortedDistribution = [...distribution].sort(
-    (a, b) => b.stock - a.stock
-  );
+  const sortedDistribution = useMemo(() => {
+    return [...(distribution || [])].sort((a, b) => b.stock - a.stock);
+  }, [distribution]);
 
-  // Determine label key for charts
   const labelKey =
     filter === "product" || (filter === "category" && selectedCategoryId)
       ? "productName"
@@ -284,7 +280,7 @@ export default function ReportsCharts() {
                   </tr>
                 </thead>
                 <tbody>
-                  {thresholdAnalysis
+                  {[...thresholdAnalysis]
                     .sort((a, b) => b.deficit - a.deficit)
                     .map((item) => (
                       <tr key={item.productId} className="border-b last:border-0">

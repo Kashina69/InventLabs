@@ -57,7 +57,7 @@ export default function CategoriesTable() {
     try {
       await createCategory({
         name: newCategory.name,
-        createdBy: user?.name || "Unknown User"
+        createdBy: user?.name || "Admin"
       })
       setIsAddModalOpen(false)
     } catch (error) {
